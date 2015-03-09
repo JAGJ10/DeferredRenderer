@@ -64,11 +64,11 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, postEffects, 0);
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		drawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 	}
 
-	glDrawBuffers(3, drawBuffers);
+	glDrawBuffers(4, drawBuffers);
 
 	//Unbind
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -77,6 +77,9 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 GBuffer::~GBuffer() {
 	if (fbo != 0) {
 		glDeleteFramebuffers(1, &fbo);
+		glDeleteTextures(1, &position);
+		glDeleteTextures(1, &normal);
+		glDeleteTextures(1, &color);
 		glDeleteTextures(1, &depthTex);
 		glDeleteTextures(1, &postEffects);
 	}

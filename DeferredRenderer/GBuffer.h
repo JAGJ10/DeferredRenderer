@@ -15,7 +15,7 @@ public:
 	int getHeight() const;
 
 private:
-	GLenum drawBuffers[3];
+	GLenum drawBuffers[4];
 
 	GLuint fbo, depthTex, postEffects;
 	GLuint position, normal, color;
