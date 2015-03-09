@@ -15,7 +15,7 @@ public:
 	int getHeight() const;
 
 private:
-	std::vector<GLuint> drawBuffers;
+	GLenum drawBuffers[3];
 
 	GLuint fbo, depthTex, postEffects;
 	GLuint position, normal, color;

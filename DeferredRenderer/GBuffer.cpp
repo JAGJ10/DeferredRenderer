@@ -68,7 +68,7 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 		drawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 	}
 
-	glDrawBuffers(3, &drawBuffers[0]);
+	glDrawBuffers(3, drawBuffers);
 
 	//Unbind
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
