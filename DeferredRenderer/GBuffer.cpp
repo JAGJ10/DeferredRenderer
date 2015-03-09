@@ -64,7 +64,11 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, postEffects, 0);
 
-	glDrawBuffers(3, drawBuffers);
+	for (int i = 0; i < 3; i++) {
+		drawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+	}
+
+	glDrawBuffers(3, &drawBuffers[0]);
 
 	//Unbind
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

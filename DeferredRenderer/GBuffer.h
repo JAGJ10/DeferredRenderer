@@ -15,7 +15,7 @@ public:
 	int getHeight() const;
 
 private:
-	GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	std::vector<GLuint> drawBuffers;
 
 	GLuint fbo, depthTex, postEffects;
 	GLuint position, normal, color;
