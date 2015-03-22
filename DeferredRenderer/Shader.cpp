@@ -148,7 +148,7 @@ int Shader::setUniformmat3(const GLchar* name, const glm::mat3& param) {
 	GLint loc = glGetUniformLocation(program, name);
 
 	if (loc != -1)
-		glUniformMatrix3fv(loc, 1, false, glm::value_ptr(param));
+		glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(param));
 
 	return loc;
 }
@@ -157,7 +157,7 @@ int Shader::setUniformmat4(const GLchar* name, const glm::mat4& param) {
 	GLint loc = glGetUniformLocation(program, name);
 
 	if (loc != -1)
-		glUniformMatrix4fv(loc, 1, false, glm::value_ptr(param));
+		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(param));
 
 	return loc;
 }

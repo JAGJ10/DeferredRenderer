@@ -16,9 +16,10 @@ void Mesh::updateBuffers() {
 	positionBuffer.bind(GL_ARRAY_BUFFER);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * positions.size(), &positions[0], GL_STATIC_DRAW);
 
-	normalBuffer.bind(GL_ARRAY_BUFFER);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * normals.size(), &normals[0], GL_STATIC_DRAW);
-
+	if (normals.size() != 0) {
+		normalBuffer.bind(GL_ARRAY_BUFFER);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * normals.size(), &normals[0], GL_STATIC_DRAW);
+	}
 	indexBuffer.bind(GL_ELEMENT_ARRAY_BUFFER);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), &indices[0], GL_STATIC_DRAW);
 }
@@ -53,12 +54,15 @@ void Mesh::renderFromBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
-	normalBuffer.bind(GL_ARRAY_BUFFER);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);
+	if (normals.size() != 0) {
+		normalBuffer.bind(GL_ARRAY_BUFFER);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+	}
 
 	indexBuffer.bind(GL_ELEMENT_ARRAY_BUFFER);
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
+	//glDrawArrays(GL_TRIANGLES, 0, positions.size());
 }
 
 void Mesh::setAttributes() {

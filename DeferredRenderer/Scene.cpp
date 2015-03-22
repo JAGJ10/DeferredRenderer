@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass(Shader("gbuffer.vert", "gbuffer.frag")), secondPass(Shader("fsquad.vert", "fsquad.frag")) {
+Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass(Shader("gbuffer.vert", "gbuffer.frag")), secondPass(Shader("fsquad.vert", "fsquad.frag")), fullScreenQuad(Mesh()) {
 	vector<GLfloat> positions = {
 		1.0f, 1.0f,	   // Top Right
 		1.0f, -1.0f,   // Bottom Right
@@ -24,7 +24,7 @@ Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass
 Scene::~Scene() {}
 
 void Scene::loadMeshes() {
-	string inputfile = "mitsuba.obj";
+	string inputfile = "cube.obj";
 	vector<tinyobj::shape_t> shapes;
 	vector<tinyobj::material_t> materials;
 
@@ -47,7 +47,6 @@ void Scene::loadMeshes() {
 }
 
 void Scene::renderScene(Camera &cam) {
-	//visibleObjects = octree.findObjects(region);
 	//Set camera
 	glm::mat4 mView = cam.getMView();
 	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
@@ -63,17 +62,19 @@ void Scene::renderScene(Camera &cam) {
 	firstPass.setUniformmat4("mView", mView);
 	firstPass.setUniformmat4("projection", projection);
 	firstPass.setUniformmat3("mNormal", normalMatrix);
-
-	for (auto &i : meshes) {
+	
+	//for (auto &i : meshes) {
 		GLuint vao;
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
-		i.renderFromBuffers();
-	}
+		meshes[0].renderFromBuffers();
+	//}
 
 	gBuffer.unbind();
-	
-	glUseProgram(secondPass.program);
+	//GLuint vao;
+	//glGenVertexArrays(1, &vao);
+	//glBindVertexArray(vao);
+	/*glUseProgram(secondPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	secondPass.setUniformmat4("mView", mView);
 	secondPass.setUniformmat4("projection", projection);
@@ -83,8 +84,5 @@ void Scene::renderScene(Camera &cam) {
 	secondPass.setUniformi("positionMap", 0);
 	secondPass.setUniformi("normalMap", 1);
 	secondPass.setUniformi("colorMap", 2);
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	fullScreenQuad.drawFS();
+	fullScreenQuad.drawFS();*/
 }
