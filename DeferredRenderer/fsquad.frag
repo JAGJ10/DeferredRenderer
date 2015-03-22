@@ -16,8 +16,9 @@ const vec3 lightPos = vec3(0, 1000, 0);
 
 void main() {
     vec3 norm = texture(normalMap, coord).xyz;
-	vec3 s = normalize(lightPos);
-	vec3 diffuse = vec3(0.1, 0.30, 0.75) + max(dot(s, norm), 0.0);
+	vec3 pos = texture(positionMap, coord).xyz;
+	vec3 s = normalize(lightPos - pos);
+	vec3 diffuse = vec3(0.38, 0.36, 0.34) + max(dot(s, norm), 0.0);
 	fragColor = vec4(diffuse, 1);
 	//fragColor = vec4(1, 0, 0, 1);
 }
