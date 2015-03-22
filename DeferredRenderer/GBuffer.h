@@ -20,6 +20,7 @@ public:
 	void unbind();
 	void unbindDraw();
 	void unbindRead();
+	void setTextures();
 
 private:
 	GLenum drawBuffers[4];

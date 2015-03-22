@@ -18,8 +18,10 @@ public:
 	void clear();
 	void renderFromBuffers();
 	void setAttributes();
-	void render();
 	bool hasBuffer() const;
+
+	void updateFS();
+	void drawFS();
 
 private:
 	VBO positionBuffer;

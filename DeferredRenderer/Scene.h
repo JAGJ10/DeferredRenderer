@@ -21,6 +21,7 @@ public:
 private:
 	Shader firstPass;
 	Shader secondPass;
+	Mesh fullScreenQuad;
 	GBuffer gBuffer;
 	//Octree octree;
 	std::vector<SceneObject*> visibleObjects;

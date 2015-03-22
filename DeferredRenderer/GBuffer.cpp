@@ -106,7 +106,7 @@ int GBuffer::getHeight() const {
 }
 
 void GBuffer::setDrawBuffers() {
-	glDrawBuffers(4, drawBuffers);
+	glDrawBuffers(3, drawBuffers);
 }
 
 void GBuffer::bind() {
@@ -131,4 +131,15 @@ void GBuffer::unbindDraw() {
 
 void GBuffer::unbindRead() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+}
+
+void GBuffer::setTextures() {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, position);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, normal);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, color);
 }

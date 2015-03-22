@@ -58,6 +58,9 @@
     <Filter Include="Shaders\GBuffer">
       <UniqueIdentifier>{6c7ad6e3-3b2b-4358-8f67-40a0d73fadf5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\fsquad">
+      <UniqueIdentifier>{3e1054ed-a5aa-40ec-934f-b1dc1868ecaa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -144,6 +147,12 @@
     </None>
     <None Include="gbuffer.vert">
       <Filter>Shaders\GBuffer</Filter>
+    </None>
+    <None Include="fsquad.frag">
+      <Filter>Shaders\fsquad</Filter>
+    </None>
+    <None Include="fsquad.vert">
+      <Filter>Shaders\fsquad</Filter>
     </None>
   </ItemGroup>
 </Project>
