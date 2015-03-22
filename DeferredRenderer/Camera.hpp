@@ -27,13 +27,13 @@ public:
 	float mouseSens;
 	GLfloat zoom;
 
-	Camera() : eye(glm::vec3(10.0f, 20.0f, 10.0f)),
+	Camera() : eye(glm::vec3(400.0f, 300.0f, 100.0f)),
 		front(glm::normalize(glm::vec3(cos(glm::radians(-90.0f)), 0.0f, sin(glm::radians(-90.0f))))),
 		up(glm::vec3(0.0f, 1.0f, 0.0f)),
 		right(glm::cross(up, (eye - front))),
 		yaw(-90.0f),
 		pitch(0.0f),
-		speed(1.0f),
+		speed(5.0f),
 		mouseSens(4.0f),
 		zoom(45.0f)
 	{}

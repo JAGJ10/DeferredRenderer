@@ -13,7 +13,7 @@ public:
 
 	Mesh();
 	
-	void create(bool useBuffer = true);
+	void create();
 	void updateBuffers();
 	void clear();
 	void renderFromBuffers();

@@ -24,7 +24,7 @@ Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass
 Scene::~Scene() {}
 
 void Scene::loadMeshes() {
-	string inputfile = "cube.obj";
+	string inputfile = "rungholt.obj";
 	vector<tinyobj::shape_t> shapes;
 	vector<tinyobj::material_t> materials;
 
@@ -35,14 +35,16 @@ void Scene::loadMeshes() {
 		exit(1);
 	}
 
-	for (auto &i : shapes) {
-		Mesh m = Mesh();
-		m.create();
-		m.indices = i.mesh.indices;
-		m.positions = i.mesh.positions;
-		m.normals = i.mesh.normals;
-		m.updateBuffers();
-		meshes.push_back(m);
+	for (int i = 0; i < shapes.size(); i++) {
+		meshes.push_back(Mesh());
+	}
+
+	for (int i = 0; i < shapes.size(); i++) {
+		meshes[i].create();
+		meshes[i].indices = shapes[i].mesh.indices;
+		meshes[i].positions = shapes[i].mesh.positions;
+		meshes[i].normals = shapes[i].mesh.normals;
+		meshes[i].updateBuffers();
 	}
 }
 
@@ -50,7 +52,7 @@ void Scene::renderScene(Camera &cam) {
 	//Set camera
 	glm::mat4 mView = cam.getMView();
 	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
-	glm::mat4 projection = glm::perspective(cam.zoom, 1.0f, 1.0f, 1000.0f);
+	glm::mat4 projection = glm::infinitePerspective(cam.zoom, 1.0f, 1.0f);
 
 	//Clear buffer
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -63,18 +65,21 @@ void Scene::renderScene(Camera &cam) {
 	firstPass.setUniformmat4("projection", projection);
 	firstPass.setUniformmat3("mNormal", normalMatrix);
 	
-	//for (auto &i : meshes) {
+	for (auto &i : meshes) {
 		GLuint vao;
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
-		meshes[0].renderFromBuffers();
-	//}
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		i.renderFromBuffers();
+	}
 
 	gBuffer.unbind();
-	//GLuint vao;
-	//glGenVertexArrays(1, &vao);
-	//glBindVertexArray(vao);
-	/*glUseProgram(secondPass.program);
+
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	
+	glUseProgram(secondPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	secondPass.setUniformmat4("mView", mView);
 	secondPass.setUniformmat4("projection", projection);
@@ -84,5 +89,5 @@ void Scene::renderScene(Camera &cam) {
 	secondPass.setUniformi("positionMap", 0);
 	secondPass.setUniformi("normalMap", 1);
 	secondPass.setUniformi("colorMap", 2);
-	fullScreenQuad.drawFS();*/
+	fullScreenQuad.drawFS();
 }

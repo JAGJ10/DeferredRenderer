@@ -1,13 +1,11 @@
 #include "Mesh.h"
 
-Mesh::Mesh() : numIndices(0) {}
+Mesh::Mesh() : numIndices(0), positionBuffer(VBO()), indexBuffer(VBO()), normalBuffer(VBO()) {}
 
-void Mesh::create(bool useBuffer) {
-	if (useBuffer) {
-		positionBuffer.create();
-		indexBuffer.create();
-		normalBuffer.create();
-	}
+void Mesh::create() {
+	positionBuffer.create();
+	indexBuffer.create();
+	normalBuffer.create();
 }
 
 void Mesh::updateBuffers() {
@@ -53,7 +51,7 @@ void Mesh::renderFromBuffers() {
 	positionBuffer.bind(GL_ARRAY_BUFFER);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
-
+	
 	if (normals.size() != 0) {
 		normalBuffer.bind(GL_ARRAY_BUFFER);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -61,8 +59,8 @@ void Mesh::renderFromBuffers() {
 	}
 
 	indexBuffer.bind(GL_ELEMENT_ARRAY_BUFFER);
+	
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
-	//glDrawArrays(GL_TRIANGLES, 0, positions.size());
 }
 
 void Mesh::setAttributes() {

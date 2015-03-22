@@ -13,6 +13,6 @@ uniform sampler2D colorMap;
 out vec4 fragColor;
 
 void main() {
-    //fragColor = texture(normalMap, coord);
-	fragColor = vec4(1, 0, 0, 1);
+    fragColor = texture(normalMap, coord);
+	//fragColor = vec4(1, 0, 0, 1);
 }

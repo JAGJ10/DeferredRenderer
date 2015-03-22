@@ -1,6 +1,8 @@
 #include "VBO.h"
 
-VBO::VBO() : id(0) {}
+VBO::VBO() : id(0), bufferType(0) {
+	glGenBuffers(1, &id);
+}
 
 VBO::~VBO() {
 	if (id != 0) glDeleteBuffers(1, &id);
