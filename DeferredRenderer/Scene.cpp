@@ -61,6 +61,9 @@ void Scene::renderScene(Camera &cam) {
 	glUseProgram(firstPass.program);
 	gBuffer.bind();
 	gBuffer.setDrawBuffers();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	firstPass.setUniformmat4("mView", mView);
 	firstPass.setUniformmat4("projection", projection);
 	firstPass.setUniformmat3("mNormal", normalMatrix);
@@ -69,10 +72,9 @@ void Scene::renderScene(Camera &cam) {
 		GLuint vao;
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		i.renderFromBuffers();
 	}
-
+	
 	gBuffer.unbind();
 
 	GLuint vao;
