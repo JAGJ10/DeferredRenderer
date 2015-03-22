@@ -2,7 +2,6 @@
 #define COMMON_H
 
 #include <GL/glew.h>
-#include <SFML/OpenGL.hpp>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>

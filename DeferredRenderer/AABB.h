@@ -5,20 +5,20 @@
 
 class AABB {
 public:
-	glm::vec3 max;
-	glm::vec3 min;
+	glm::vec3 upper;
+	glm::vec3 lower;
 
-	AABB(glm::vec3 min, glm::vec3 max);
+	AABB(glm::vec3 lower, glm::vec3 upper);
 
 	bool operator==(const AABB &bb);
 	bool operator!=(const AABB &bb);
 
 	glm::vec3 getCenter() const;
 	void setCenter(glm::vec3 center);
-	glm::vec3 getMin() const;
-	void setMin(glm::vec3 min);
-	glm::vec3 getMax() const;
-	void setMax(glm::vec3 max);
+	glm::vec3 getLower() const;
+	void setLower(glm::vec3 lower);
+	glm::vec3 getUpper() const;
+	void setUpper(glm::vec3 upper);
 	glm::vec3 getHalfDims() const;
 
 	bool intersects(AABB bb) const;

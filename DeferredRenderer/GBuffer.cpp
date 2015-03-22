@@ -28,7 +28,7 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 
 	//Color
 	glBindTexture(GL_TEXTURE_2D, color);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -55,7 +55,7 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 	//Create post process effect buffer
 	glGenTextures(1, &postEffects);
 	glBindTexture(GL_TEXTURE_2D, postEffects);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA32F, GL_UNSIGNED_INT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA32F, GL_UNSIGNED_INT, nullptr);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -103,4 +103,32 @@ int GBuffer::getWidth() const {
 
 int GBuffer::getHeight() const {
 	return height;
+}
+
+void GBuffer::setDrawBuffers() {
+	glDrawBuffers(4, drawBuffers);
+}
+
+void GBuffer::bind() {
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+}
+
+void GBuffer::bindDraw() {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+}
+
+void GBuffer::bindRead() {
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+}
+
+void GBuffer::unbind() {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GBuffer::unbindDraw() {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void GBuffer::unbindRead() {
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 }

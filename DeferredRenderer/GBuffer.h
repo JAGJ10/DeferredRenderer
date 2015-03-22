@@ -13,6 +13,13 @@ public:
 	GLuint getPostEffects() const;
 	int getWidth() const;
 	int getHeight() const;
+	void setDrawBuffers();
+	void bind();
+	void bindDraw();
+	void bindRead();
+	void unbind();
+	void unbindDraw();
+	void unbindRead();
 
 private:
 	GLenum drawBuffers[4];

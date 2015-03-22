@@ -2,17 +2,17 @@
 
 using namespace std;
 
-AABB::AABB(glm::vec3 min, glm::vec3 max) : min(min), max(max) {
+AABB::AABB(glm::vec3 lower, glm::vec3 upper) : lower(lower), upper(upper) {
 	calcCenter();
 	calcHalfDims();
 }
 
 bool AABB::operator==(const AABB &bb) {
-	return min == bb.min && max == bb.max;
+	return lower == bb.lower && upper == bb.upper;
 }
 
 bool AABB::operator!=(const AABB &bb) {
-	return min != bb.min || max != bb.max;
+	return lower != bb.lower || upper != bb.upper;
 }
 
 glm::vec3 AABB::getCenter() const {
@@ -23,20 +23,20 @@ void AABB::setCenter(glm::vec3 center) {
 	this->center = center;
 }
 
-glm::vec3 AABB::getMin() const {
-	return min;
+glm::vec3 AABB::getLower() const {
+	return lower;
 }
 
-void AABB::setMin(glm::vec3 min) {
-	this->min = min;
+void AABB::setLower(glm::vec3 lower) {
+	this->lower = lower;
 }
 
-glm::vec3 AABB::getMax() const {
-	return max;
+glm::vec3 AABB::getUpper() const {
+	return upper;
 }
 
-void AABB::setMax(glm::vec3 max) {
-	this->max = max;
+void AABB::setUpper(glm::vec3 upper) {
+	this->upper = upper;
 }
 
 glm::vec3 AABB::getHalfDims() const {
@@ -44,17 +44,17 @@ glm::vec3 AABB::getHalfDims() const {
 }
 
 bool AABB::intersects(AABB bb) const {
-	if (max.x < bb.min.x)
+	if (upper.x < bb.lower.x)
 		return false;
-	if (max.y < bb.min.y)
+	if (upper.y < bb.lower.y)
 		return false;
-	if (max.z < bb.min.z)
+	if (upper.z < bb.lower.z)
 		return false;
-	if (min.x > bb.max.x)
+	if (lower.x > bb.upper.x)
 		return false;
-	if (min.y > bb.max.y)
+	if (lower.y > bb.upper.y)
 		return false;
-	if (min.z > bb.max.z)
+	if (lower.z > bb.upper.z)
 		return false;
 
 	return true;
@@ -62,8 +62,8 @@ bool AABB::intersects(AABB bb) const {
 
 bool AABB::intersects(glm::vec3 p1, glm::vec3 p2) const {
 	glm::vec3 d = (p2 - p1) * 0.5f;
-	glm::vec3 e = (max - min) * 0.5f;
-	glm::vec3 c = p1 + d - (min + max) * 0.5f;
+	glm::vec3 e = (upper - lower) * 0.5f;
+	glm::vec3 c = p1 + d - (lower + upper) * 0.5f;
 	glm::vec3 ad = glm::vec3(fabs(d.x), fabs(d.y), fabs(d.z));
 
 	if (fabs(c.x) > e.x + ad.x)
@@ -86,25 +86,25 @@ bool AABB::intersects(glm::vec3 p1, glm::vec3 p2) const {
 }
 
 bool AABB::contains(AABB bb) const {
-	if (bb.min.x >= min.x && bb.max.x <= max.x && bb.min.y >= min.y && 
-		bb.max.y <= max.y && bb.min.z >= min.z && bb.max.z <= max.z)
+	if (bb.lower.x >= lower.x && bb.upper.x <= upper.x && bb.lower.y >= lower.y && 
+		bb.upper.y <= upper.y && bb.lower.z >= lower.z && bb.upper.z <= upper.z)
 		return true;
 
 	return false;
 }
 
 bool AABB::contains(glm::vec3 p) const {
-	if (p.x >= min.x && p.x <= max.x && p.y >= min.y &&
-		p.y <= max.y && p.z >= min.z && p.z <= max.z)
+	if (p.x >= lower.x && p.x <= upper.x && p.y >= lower.y &&
+		p.y <= upper.y && p.z >= lower.z && p.z <= upper.z)
 		return true;
 
 	return false;
 }
 
 void AABB::calcCenter() {
-	center = ((max - min) * 0.5f) + min;
+	center = ((upper - lower) * 0.5f) + lower;
 }
 
 void AABB::calcHalfDims() {
-	halfDims = (max - min) * 0.5f;
+	halfDims = (upper - lower) * 0.5f;
 }

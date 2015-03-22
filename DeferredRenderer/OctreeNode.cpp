@@ -45,7 +45,7 @@ bool OctreeNode::partition() {
 		for (int y = 0; y < 2; y++) {
 			for (int z = 0; z < 2; z++) {
 				glm::vec3 offset = glm::vec3(x * halfDims.x, y * halfDims.y, z * halfDims.z);
-				AABB childBB(bb.getMin() + offset, bb.getCenter() + offset);
+				AABB childBB(bb.getLower() + offset, bb.getCenter() + offset);
 
 				children[x + y * 2 + z * 4].reset(new OctreeNode(childBB, level + 1, this, maxObjects));
 			}

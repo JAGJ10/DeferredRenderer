@@ -6,8 +6,9 @@
 
 class Mesh {
 public:
-	std::vector<glm::vec3> vertices;
+	std::vector<float> positions;
 	std::vector<GLuint> indices;
+	std::vector<float> normals;
 	int numIndices;
 
 	Mesh();
@@ -23,6 +24,7 @@ public:
 private:
 	VBO positionBuffer;
 	VBO indexBuffer;
+	VBO normalBuffer;
 };
 
 #endif
