@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "Camera.hpp"
 #include "Shader.h"
+#include "tiny_obj_loader.h"
 
 class Scene {
 public:
@@ -17,6 +18,7 @@ public:
 
 	void loadMeshes();
 	void renderScene(Camera &cam);
+	std::vector<tinyobj::shape_t> read(std::istream& stream);
 
 private:
 	Shader firstPass;

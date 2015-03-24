@@ -9,6 +9,7 @@ uniform mat4 projection;
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
+uniform sampler2D depthMap;
 
 out vec4 fragColor;
 
@@ -19,6 +20,8 @@ void main() {
 	vec3 pos = texture(positionMap, coord).xyz;
 	vec3 s = normalize(lightPos - pos);
 	vec3 diffuse = vec3(0.38, 0.36, 0.34) + max(dot(s, norm), 0.0);
+
+	float depth = texture(depthMap, coord).x;
+
 	fragColor = vec4(diffuse, 1);
-	//fragColor = vec4(1, 0, 0, 1);
 }

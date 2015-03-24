@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "tiny_obj_loader.h"
 
 using namespace std;
 
@@ -24,20 +23,10 @@ Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass
 Scene::~Scene() {}
 
 void Scene::loadMeshes() {
-	string inputfile = "rungholt.obj";
-	vector<tinyobj::shape_t> shapes;
-	vector<tinyobj::material_t> materials;
+	ifstream infile("rungholt.cobj", std::ifstream::binary);
+	vector<tinyobj::shape_t> shapes = read(infile);
 
-	string err = tinyobj::LoadObj(shapes, materials, inputfile.c_str());
-
-	if (!err.empty()) {
-		std::cerr << err << std::endl;
-		exit(1);
-	}
-
-	for (int i = 0; i < shapes.size(); i++) {
-		meshes.push_back(Mesh());
-	}
+	meshes.resize(shapes.size());
 
 	for (int i = 0; i < shapes.size(); i++) {
 		meshes[i].create();
@@ -59,7 +48,7 @@ void Scene::renderScene(Camera &cam) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(firstPass.program);
-	gBuffer.bind();
+	gBuffer.bindDraw();
 	gBuffer.setDrawBuffers();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -69,17 +58,10 @@ void Scene::renderScene(Camera &cam) {
 	firstPass.setUniformmat3("mNormal", normalMatrix);
 	
 	for (auto &i : meshes) {
-		GLuint vao;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
 		i.renderFromBuffers();
 	}
 	
-	gBuffer.unbind();
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	gBuffer.unbindDraw();
 	
 	glUseProgram(secondPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -91,5 +73,39 @@ void Scene::renderScene(Camera &cam) {
 	secondPass.setUniformi("positionMap", 0);
 	secondPass.setUniformi("normalMap", 1);
 	secondPass.setUniformi("colorMap", 2);
+	secondPass.setUniformi("depthMap", 3);
 	fullScreenQuad.drawFS();
+}
+
+std::vector<tinyobj::shape_t> Scene::read(std::istream& stream) {
+	assert(sizeof(float) == sizeof(int));
+	const auto sz = sizeof(int);
+
+	std::vector<tinyobj::shape_t> shapes;
+
+	int nMeshes = 0;
+	int nMatProperties = 0;
+	stream.read((char*)&nMeshes, sz);
+	stream.read((char*)&nMatProperties, sz);
+	shapes.resize(nMeshes);
+	for (size_t i = 0; i < nMeshes; ++i) {
+		int nVertices = 0, nNormals = 0, nTexcoords = 0, nIndices = 0;
+		stream.read((char*)&nVertices, sz);
+		stream.read((char*)&nNormals, sz);
+		stream.read((char*)&nTexcoords, sz);
+		stream.read((char*)&nIndices, sz);
+
+		shapes[i].mesh.positions.resize(nVertices);
+		shapes[i].mesh.normals.resize(nNormals);
+		shapes[i].mesh.texcoords.resize(nTexcoords);
+		shapes[i].mesh.indices.resize(nIndices);
+
+		stream.read((char*)&shapes[i].mesh.positions[0], nVertices  * sz);
+		stream.read((char*)&shapes[i].mesh.normals[0], nNormals   * sz);
+		stream.read((char*)&shapes[i].mesh.texcoords[0], nTexcoords * sz);
+		stream.read((char*)&shapes[i].mesh.indices[0], nIndices   * sz);
+		//stream.read((char*)&shapes[i].material.ambient[0], 3 * sz);
+	}
+
+	return shapes;
 }

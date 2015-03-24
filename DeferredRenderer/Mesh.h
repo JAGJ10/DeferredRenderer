@@ -24,6 +24,7 @@ public:
 	void drawFS();
 
 private:
+	GLuint vao;
 	VBO positionBuffer;
 	VBO indexBuffer;
 	VBO normalBuffer;

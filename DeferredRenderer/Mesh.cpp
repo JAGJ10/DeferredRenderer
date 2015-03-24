@@ -3,6 +3,7 @@
 Mesh::Mesh() : numIndices(0), positionBuffer(VBO()), indexBuffer(VBO()), normalBuffer(VBO()) {}
 
 void Mesh::create() {
+	glGenVertexArrays(1, &vao);
 	positionBuffer.create();
 	indexBuffer.create();
 	normalBuffer.create();
@@ -46,8 +47,9 @@ void Mesh::clear() {
 	numIndices = 0;
 }
 
-//Should be removed
 void Mesh::renderFromBuffers() {
+	glBindVertexArray(vao);
+
 	positionBuffer.bind(GL_ARRAY_BUFFER);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
