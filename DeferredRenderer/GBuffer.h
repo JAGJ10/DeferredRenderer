@@ -9,7 +9,7 @@ public:
 	~GBuffer();
 	
 	GLuint getFBO() const;
-	GLuint getDepthTex() const;
+	GLuint getDepth() const;
 	GLuint getPostEffects() const;
 	int getWidth() const;
 	int getHeight() const;
@@ -25,7 +25,7 @@ public:
 private:
 	GLenum drawBuffers[4];
 
-	GLuint fbo, depthTex, postEffects;
+	GLuint fbo, depth, postEffects;
 	GLuint position, normal, color;
 
 	int width, height;

@@ -26,7 +26,7 @@ private:
 	Mesh fullScreenQuad;
 	GBuffer gBuffer;
 	//Octree octree;
-	std::vector<SceneObject*> visibleObjects;
+	//std::vector<SceneObject*> visibleObjects;
 	std::vector<Mesh> meshes;
 };
 
