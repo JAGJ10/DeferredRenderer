@@ -52,24 +52,24 @@
     <Filter Include="tinyobj">
       <UniqueIdentifier>{1a32c216-094c-4ced-9edb-a6e44c91a8e4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders">
+    <Filter Include="Header Files\Scene">
+      <UniqueIdentifier>{186fb0ca-f31f-4108-a2d5-7338186359ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene">
+      <UniqueIdentifier>{6089f568-abfa-4a6f-9285-590dbcbf1a32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
       <UniqueIdentifier>{e95164eb-c675-4c60-afbb-e7386a427c9b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\GBuffer">
+    <Filter Include="shaders\GBuffer">
       <UniqueIdentifier>{6c7ad6e3-3b2b-4358-8f67-40a0d73fadf5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\fsquad">
+    <Filter Include="shaders\fsquad">
       <UniqueIdentifier>{3e1054ed-a5aa-40ec-934f-b1dc1868ecaa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
@@ -99,15 +99,18 @@
     <ClCompile Include="tiny_obj_loader.cc">
       <Filter>tinyobj</Filter>
     </ClCompile>
+    <ClCompile Include="GBuffer.cpp">
+      <Filter>Source Files\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="FullscreenQuad.cpp">
+      <Filter>Source Files\Shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Octree.h">
@@ -137,22 +140,31 @@
     <ClInclude Include="tiny_obj_loader.h">
       <Filter>tinyobj</Filter>
     </ClInclude>
+    <ClInclude Include="GBuffer.h">
+      <Filter>Header Files\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="Camera.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="FullscreenQuad.h">
+      <Filter>Header Files\Shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gbuffer.frag">
-      <Filter>Shaders\GBuffer</Filter>
+      <Filter>shaders\GBuffer</Filter>
     </None>
     <None Include="gbuffer.vert">
-      <Filter>Shaders\GBuffer</Filter>
+      <Filter>shaders\GBuffer</Filter>
     </None>
     <None Include="fsquad.frag">
-      <Filter>Shaders\fsquad</Filter>
+      <Filter>shaders\fsquad</Filter>
     </None>
     <None Include="fsquad.vert">
-      <Filter>Shaders\fsquad</Filter>
+      <Filter>shaders\fsquad</Filter>
     </None>
   </ItemGroup>
 </Project>

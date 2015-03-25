@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass(Shader("gbuffer.vert", "gbuffer.frag")), secondPass(Shader("fsquad.vert", "fsquad.frag")), fullScreenQuad(Mesh()) {
+Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass(Shader("gbuffer.vert", "gbuffer.frag")), secondPass(Shader("fsquad.vert", "fsquad.frag")), fsQuad(FullscreenQuad()) {
 	vector<GLfloat> positions = {
 		1.0f, 1.0f,	   // Top Right
 		1.0f, -1.0f,   // Bottom Right
@@ -14,10 +14,8 @@ Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass
 		1, 2, 3	// Second Triangle
 	};
 
-	fullScreenQuad.create();
-	fullScreenQuad.indices = indices;
-	fullScreenQuad.positions = positions;
-	fullScreenQuad.updateFS();
+	fsQuad.create();
+	fsQuad.updateBuffers(positions, indices);
 }
 
 Scene::~Scene() {}
@@ -30,10 +28,7 @@ void Scene::loadMeshes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 		meshes[i].create();
-		meshes[i].indices = shapes[i].mesh.indices;
-		meshes[i].positions = shapes[i].mesh.positions;
-		meshes[i].normals = shapes[i].mesh.normals;
-		meshes[i].updateBuffers();
+		meshes[i].updateBuffers(shapes[i].mesh.positions, shapes[i].mesh.indices, shapes[i].mesh.normals);
 	}
 }
 
@@ -74,7 +69,7 @@ void Scene::renderScene(Camera &cam) {
 	secondPass.setUniformi("normalMap", 1);
 	secondPass.setUniformi("colorMap", 2);
 	secondPass.setUniformi("depthMap", 3);
-	fullScreenQuad.drawFS();
+	fsQuad.renderFromBuffers();
 }
 
 std::vector<tinyobj::shape_t> Scene::read(std::istream& stream) {

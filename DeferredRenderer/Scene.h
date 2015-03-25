@@ -7,6 +7,7 @@
 #include "GBuffer.h"
 #include "AABB.h"
 #include "Mesh.h"
+#include "FullscreenQuad.h"
 #include "Camera.hpp"
 #include "Shader.h"
 #include "tiny_obj_loader.h"
@@ -23,7 +24,7 @@ public:
 private:
 	Shader firstPass;
 	Shader secondPass;
-	Mesh fullScreenQuad;
+	FullscreenQuad fsQuad;
 	GBuffer gBuffer;
 	//Octree octree;
 	//std::vector<SceneObject*> visibleObjects;

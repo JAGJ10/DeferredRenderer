@@ -6,22 +6,17 @@
 
 class Mesh {
 public:
-	std::vector<float> positions;
-	std::vector<GLuint> indices;
-	std::vector<float> normals;
 	int numIndices;
 
 	Mesh();
-	
+	~Mesh();
+
 	void create();
-	void updateBuffers();
+	void updateBuffers(std::vector<float>& positions, std::vector<GLuint>& indices, std::vector<float>& normals);
 	void clear();
 	void renderFromBuffers();
 	void setAttributes();
 	bool hasBuffer() const;
-
-	void updateFS();
-	void drawFS();
 
 private:
 	GLuint vao;
