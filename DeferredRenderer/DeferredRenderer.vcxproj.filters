@@ -61,11 +61,14 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{e95164eb-c675-4c60-afbb-e7386a427c9b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="shaders\GBuffer">
-      <UniqueIdentifier>{6c7ad6e3-3b2b-4358-8f67-40a0d73fadf5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="shaders\fsquad">
       <UniqueIdentifier>{3e1054ed-a5aa-40ec-934f-b1dc1868ecaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\ssao">
+      <UniqueIdentifier>{a0ee73bd-e212-4d7c-b7ea-6ab324cf56f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\gbuffer">
+      <UniqueIdentifier>{6c7ad6e3-3b2b-4358-8f67-40a0d73fadf5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -155,16 +158,22 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="gbuffer.frag">
-      <Filter>shaders\GBuffer</Filter>
+      <Filter>shaders\gbuffer</Filter>
     </None>
     <None Include="gbuffer.vert">
-      <Filter>shaders\GBuffer</Filter>
+      <Filter>shaders\gbuffer</Filter>
     </None>
     <None Include="fsquad.frag">
       <Filter>shaders\fsquad</Filter>
     </None>
     <None Include="fsquad.vert">
       <Filter>shaders\fsquad</Filter>
+    </None>
+    <None Include="ssao.frag">
+      <Filter>shaders\ssao</Filter>
+    </None>
+    <None Include="ssao.vert">
+      <Filter>shaders\ssao</Filter>
     </None>
   </ItemGroup>
 </Project>

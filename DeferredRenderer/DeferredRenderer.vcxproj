@@ -186,6 +186,8 @@
     <None Include="fsquad.vert" />
     <None Include="gbuffer.frag" />
     <None Include="gbuffer.vert" />
+    <None Include="ssao.frag" />
+    <None Include="ssao.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
