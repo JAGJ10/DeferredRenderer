@@ -43,7 +43,7 @@ void Scene::initKernel() {
 		float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		glm::vec3 k(r1 * 2.0f - 1.0f, r2 * 2.0f - 1.0f, r3);
-		glm::normalize(k);
+		k = glm::normalize(k);
 		float scale = float(i) / 16.0f;
 		scale = glm::lerp(0.1f, 1.0f, scale * scale);
 		k *= scale;
@@ -71,7 +71,7 @@ void Scene::initKernel() {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	noiseScale = glm::vec2(0.25f, 0.25f);
+	noiseScale = glm::vec2(1.0f / (width / 4), 1.0f / (height / 4));
 }
 
 void Scene::renderScene(Camera &cam) {
@@ -79,7 +79,7 @@ void Scene::renderScene(Camera &cam) {
 	glm::mat4 mView = cam.getMView();
 	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
 	//glm::mat4 projection = glm::infinitePerspective(cam.zoom, 0.1f, 1.0f);
-	glm::mat4 projection = glm::perspective(cam.zoom, 1.0f, 0.1f, 1000.0f);
+	glm::mat4 projection = glm::perspective(cam.zoom, 1.0f, 1.0f, 1000.0f);
 
 	//Clear buffer
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -114,7 +114,7 @@ void Scene::renderScene(Camera &cam) {
 	secondPass.setUniformmat4("projection", projection);
 	secondPass.setUniformmat3("mNormal", normalMatrix);
 
-	secondPass.setUniformf("fov", tanf(cam.zoom / 2.0f));
+	secondPass.setUniformf("fov", tanf(cam.zoom * 0.5f));
 	secondPass.setUniformv2f("noiseScale", noiseScale);
 	secondPass.setUniform3fv("kernel", GLuint(kernel.size()), &kernel[0]);
 

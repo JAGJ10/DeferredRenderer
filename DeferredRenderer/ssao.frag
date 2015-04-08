@@ -18,10 +18,10 @@ uniform sampler2D noiseMap;
 
 out vec4 fragColor;
 
-const float radius = 1;
+const float radius = 5;
 
 float linearizeDepth(float depth) {
-    float near = 0.1; 
+    float near = 1.0; 
     float far = 1000.0; 
     float z = depth * 2.0 - 1.0; //Back to NDC 
     return (2.0 * near) / (far + near - z * (far - near));	
@@ -63,6 +63,7 @@ void main() {
 
 	occlusion = 1.0 - (occlusion / 16.0);
 
+	//fragColor = vec4(norm, 1);
 	//fragColor = vec4(origin, 1);
 	fragColor = vec4(occlusion);
 	//fragColor = vec4(linearizeDepth(texture(depthMap, coord).x));
