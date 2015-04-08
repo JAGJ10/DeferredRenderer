@@ -59,6 +59,8 @@ void Scene::renderScene(Camera &cam) {
 		i.renderFromBuffers();
 	}
 	
+	glDisable(GL_DEPTH_TEST);
+
 	gBuffer.unbindDraw();
 	
 	glUseProgram(secondPass.program);
