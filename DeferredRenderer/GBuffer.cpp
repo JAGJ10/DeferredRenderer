@@ -101,7 +101,7 @@ int GBuffer::getHeight() const {
 }
 
 void GBuffer::setDrawBuffers() {
-	glDrawBuffers(3, drawBuffers);
+	glDrawBuffers(4, drawBuffers);
 }
 
 void GBuffer::bind() {

@@ -36,7 +36,8 @@ void Scene::renderScene(Camera &cam) {
 	//Set camera
 	glm::mat4 mView = cam.getMView();
 	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
-	glm::mat4 projection = glm::infinitePerspective(cam.zoom, 1.0f, 1.0f);
+	//glm::mat4 projection = glm::infinitePerspective(cam.zoom, 1.0f, 1.0f);
+	glm::mat4 projection = glm::perspective(cam.zoom, 1.0f, 0.1f, 1000.0f);
 
 	//Clear buffer
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -52,6 +53,8 @@ void Scene::renderScene(Camera &cam) {
 	firstPass.setUniformmat4("projection", projection);
 	firstPass.setUniformmat3("mNormal", normalMatrix);
 	
+	glEnable(GL_DEPTH_TEST);
+
 	for (auto &i : meshes) {
 		i.renderFromBuffers();
 	}
@@ -70,6 +73,8 @@ void Scene::renderScene(Camera &cam) {
 	secondPass.setUniformi("colorMap", 2);
 	secondPass.setUniformi("depthMap", 3);
 	fsQuad.renderFromBuffers();
+
+	cout << glGetError() << endl;
 }
 
 std::vector<tinyobj::shape_t> Scene::read(std::istream& stream) {
