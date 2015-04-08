@@ -4,14 +4,14 @@ using namespace std;
 
 Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass(Shader("gbuffer.vert", "gbuffer.frag")), secondPass(Shader("fsquad.vert", "fsquad.frag")), fsQuad(FullscreenQuad()) {
 	vector<GLfloat> positions = {
-		1.0f, 1.0f,	   // Top Right
-		1.0f, -1.0f,   // Bottom Right
-		-1.0f, -1.0f,  // Bottom Left
-		-1.0f, 1.0f	   // Top Left 
+		1.0f, 1.0f,	   //Top Right
+		1.0f, -1.0f,   //Bottom Right
+		-1.0f, -1.0f,  //Bottom Left
+		-1.0f, 1.0f	   //Top Left 
 	};
 	vector<GLuint> indices = {
-		0, 1, 3,	// First Triangle
-		1, 2, 3	// Second Triangle
+		0, 1, 3,	//First Triangle
+		1, 2, 3		//Second Triangle
 	};
 
 	fsQuad.create();
@@ -24,6 +24,7 @@ void Scene::loadMeshes() {
 	ifstream infile("rungholt.cobj", std::ifstream::binary);
 	vector<tinyobj::shape_t> shapes = read(infile);
 
+	meshes.clear();
 	meshes.resize(shapes.size());
 
 	for (int i = 0; i < shapes.size(); i++) {
@@ -43,6 +44,7 @@ void Scene::renderScene(Camera &cam) {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	//Render to gBuffer
 	glUseProgram(firstPass.program);
 	gBuffer.bindDraw();
 	gBuffer.setDrawBuffers();
@@ -62,9 +64,11 @@ void Scene::renderScene(Camera &cam) {
 	glDisable(GL_DEPTH_TEST);
 
 	gBuffer.unbindDraw();
-	
+
+	//Render to screen
 	glUseProgram(secondPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	secondPass.setUniformmat4("mView", mView);
 	secondPass.setUniformmat4("projection", projection);
 	secondPass.setUniformmat3("mNormal", normalMatrix);
