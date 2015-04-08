@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass(Shader("gbuffer.vert", "gbuffer.frag")), secondPass(Shader("fsquad.vert", "fsquad.frag")), fsQuad(FullscreenQuad()) {
+Scene::Scene(int width, int height) : width(width), height(height), gBuffer(GBuffer(width, height)), firstPass(Shader("gbuffer.vert", "gbuffer.frag")), secondPass(Shader("ssao.vert", "ssao.frag")), fsQuad(FullscreenQuad()) {
 	vector<GLfloat> positions = {
 		1.0f, 1.0f,	   //Top Right
 		1.0f, -1.0f,   //Bottom Right
@@ -16,6 +16,8 @@ Scene::Scene(int width, int height) : gBuffer(GBuffer(width, height)), firstPass
 
 	fsQuad.create();
 	fsQuad.updateBuffers(positions, indices);
+
+	srand(int(time(NULL)));
 }
 
 Scene::~Scene() {}
@@ -31,13 +33,52 @@ void Scene::loadMeshes() {
 		meshes[i].create();
 		meshes[i].updateBuffers(shapes[i].mesh.positions, shapes[i].mesh.indices, shapes[i].mesh.normals);
 	}
+
+	initKernel();
+}
+
+void Scene::initKernel() {
+	for (int i = 0; i < 16; i++) {
+		float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		glm::vec3 k(r1 * 2.0f - 1.0f, r2 * 2.0f - 1.0f, r3);
+		glm::normalize(k);
+		float scale = float(i) / 16.0f;
+		scale = glm::lerp(0.1f, 1.0f, scale * scale);
+		k *= scale;
+
+		kernel.push_back(k.x);
+		kernel.push_back(k.y);
+		kernel.push_back(k.z);
+	}
+
+	vector<glm::vec3> noise;
+	for (int i = 0; i < 16; i++) {
+		float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		glm::vec3 n(r1 * 2.0f - 1.0f, r2 * 2.0f - 1.0f, 0);
+		n = glm::normalize(n);
+		noise.push_back(n);
+	}
+
+	glGenTextures(1, &noiseTex);
+	glBindTexture(GL_TEXTURE_2D, noiseTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGBA, GL_FLOAT, &noise[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	noiseScale = glm::vec2(0.25f, 0.25f);
 }
 
 void Scene::renderScene(Camera &cam) {
 	//Set camera
 	glm::mat4 mView = cam.getMView();
 	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
-	//glm::mat4 projection = glm::infinitePerspective(cam.zoom, 1.0f, 1.0f);
+	//glm::mat4 projection = glm::infinitePerspective(cam.zoom, 0.1f, 1.0f);
 	glm::mat4 projection = glm::perspective(cam.zoom, 1.0f, 0.1f, 1000.0f);
 
 	//Clear buffer
@@ -73,11 +114,20 @@ void Scene::renderScene(Camera &cam) {
 	secondPass.setUniformmat4("projection", projection);
 	secondPass.setUniformmat3("mNormal", normalMatrix);
 
+	secondPass.setUniformf("fov", tanf(cam.zoom / 2.0f));
+	secondPass.setUniformv2f("noiseScale", noiseScale);
+	secondPass.setUniform3fv("kernel", GLuint(kernel.size()), &kernel[0]);
+
 	gBuffer.setTextures();
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, noiseTex);
+
 	secondPass.setUniformi("positionMap", 0);
 	secondPass.setUniformi("normalMap", 1);
 	secondPass.setUniformi("colorMap", 2);
 	secondPass.setUniformi("depthMap", 3);
+	secondPass.setUniformi("noiseMap", 4);
+
 	fsQuad.renderFromBuffers();
 
 	cout << glGetError() << endl;

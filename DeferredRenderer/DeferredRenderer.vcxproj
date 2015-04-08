@@ -186,6 +186,7 @@
     <None Include="fsquad.vert" />
     <None Include="gbuffer.frag" />
     <None Include="gbuffer.vert" />
+    <None Include="noise.frag" />
     <None Include="ssao.frag" />
     <None Include="ssao.vert" />
   </ItemGroup>

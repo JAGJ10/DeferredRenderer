@@ -175,5 +175,8 @@
     <None Include="ssao.vert">
       <Filter>shaders\ssao</Filter>
     </None>
+    <None Include="noise.frag">
+      <Filter>shaders\ssao</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -11,6 +11,7 @@
 #include "Camera.hpp"
 #include "Shader.h"
 #include "tiny_obj_loader.h"
+#include <time.h>
 
 class Scene {
 public:
@@ -22,6 +23,11 @@ public:
 	std::vector<tinyobj::shape_t> read(std::istream& stream);
 
 private:
+	int width, height;
+
+	GLuint noiseTex;
+	glm::vec2 noiseScale;
+
 	Shader firstPass;
 	Shader secondPass;
 	FullscreenQuad fsQuad;
@@ -29,6 +35,9 @@ private:
 	//Octree octree;
 	//std::vector<SceneObject*> visibleObjects;
 	std::vector<Mesh> meshes;
+	std::vector<float> kernel;
+
+	void initKernel();
 };
 
 #endif
