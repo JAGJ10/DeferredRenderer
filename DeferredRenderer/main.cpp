@@ -13,8 +13,8 @@
 std::vector<tinyobj::shape_t> read(std::istream& stream);
 void write(std::ostream& stream, const std::vector<tinyobj::shape_t>& shapes);
 
-static const int width = 512;
-static const int height = 512;
+static const int width = 1280;
+static const int height = 720;
 static const GLfloat lastX = (width / 2);
 static const GLfloat lastY = (height / 2);
 float deltaTime = 0.0f;
