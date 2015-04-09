@@ -109,7 +109,7 @@ void Scene::renderScene(Camera &cam) {
 	firstPass.setUniformmat4("projection", projection);
 	firstPass.setUniformmat3("mNormal", normalMatrix);
 	
-	//glEnable(GL_STENCIL_TEST);
+	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_DEPTH_TEST);
 	
 	for (auto &i : meshes) {
@@ -117,7 +117,7 @@ void Scene::renderScene(Camera &cam) {
 	}
 	
 	glDisable(GL_DEPTH_TEST);
-	//glDisable(GL_STENCIL_TEST);
+	glDisable(GL_STENCIL_TEST);
 
 	//gBuffer.unbindDraw();
 
