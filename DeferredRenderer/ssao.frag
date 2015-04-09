@@ -28,7 +28,8 @@ float linearizeDepth(float depth) {
 }
 
 void main() {
-    vec3 norm = normalize(texture(normalMap, coord).xyz * 2.0 - 1.0);
+    //vec3 norm = normalize(texture(normalMap, coord).xyz * 2.0 - 1.0);
+	vec3 norm = normalize(texture(normalMap, coord).xyz);
 	vec3 pos = texture(positionMap, coord).xyz;
 	float depth = linearizeDepth(texture(depthMap, coord).x);
 
