@@ -1,7 +1,7 @@
 #version 420 core
 
-in vec3 position;
-in vec3 normal;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 normal;
 
 uniform mat4 mView;
 uniform mat4 projection;

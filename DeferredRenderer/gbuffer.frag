@@ -4,9 +4,9 @@ in vec3 fragPos;
 in vec3 fragNormal;
 in vec3 fragColor;
 
-out vec4 position;
-out vec4 normal;
-out vec4 color;
+layout(location = 0) out vec4 position;
+layout(location = 1) out vec4 normal;
+layout(location = 2) out vec4 color;
 
 void main() {
 	position = vec4(fragPos, 1.0);
