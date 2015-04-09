@@ -70,6 +70,9 @@
     <Filter Include="shaders\gbuffer">
       <UniqueIdentifier>{6c7ad6e3-3b2b-4358-8f67-40a0d73fadf5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders\blur">
+      <UniqueIdentifier>{987cbef0-1235-4eb8-b13e-189b6d7ce2b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -174,6 +177,12 @@
     </None>
     <None Include="ssao.vert">
       <Filter>shaders\ssao</Filter>
+    </None>
+    <None Include="blur.vert">
+      <Filter>shaders\blur</Filter>
+    </None>
+    <None Include="blur.frag">
+      <Filter>shaders\blur</Filter>
     </None>
   </ItemGroup>
 </Project>
