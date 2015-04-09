@@ -29,7 +29,9 @@ private:
 	glm::vec2 noiseScale;
 
 	Shader firstPass;
-	Shader secondPass;
+	Shader ssao;
+	Shader blur;
+	Shader lightPass;
 	FullscreenQuad fsQuad;
 	GBuffer gBuffer;
 	//Octree octree;

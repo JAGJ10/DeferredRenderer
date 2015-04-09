@@ -2,13 +2,16 @@
 
 in vec2 coord;
 
+#define maxKernel 256
+
 uniform mat4 mView;
 uniform mat3 mNormal;
 uniform mat4 projection;
 
+uniform int kernelSize;
 uniform float fov;
 uniform vec2 noiseScale;
-uniform vec3 kernel[16];
+uniform vec3 kernel[maxKernel];
 
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
@@ -44,7 +47,7 @@ void main() {
 	mat3 tbn = mat3(tangent, bitangent, norm);
 
 	float occlusion = 0.0f;
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < kernelSize; i++) {
 		//Get sample position
 		vec3 s = tbn * kernel[i];
 		s = s * radius + origin;
@@ -65,7 +68,7 @@ void main() {
 		//occlusion += step(-sampleDepth, -s.z) * rangeCheck;
 	}
 
-	occlusion = 1.0 - (occlusion / 16.0);
+	occlusion = 1.0 - (occlusion / float(kernelSize));
 
 	//fragColor = vec4(pos, 1);
 	//fragColor = vec4(norm, 1);

@@ -14,6 +14,9 @@ public:
 	int getWidth() const;
 	int getHeight() const;
 	void setDrawBuffers();
+	void setDrawEffect();
+	//void setReadBuffer();
+	void setReadEffect();
 	void bind();
 	void bindDraw();
 	void bindRead();
