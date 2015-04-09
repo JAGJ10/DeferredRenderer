@@ -18,7 +18,7 @@ uniform sampler2D noiseMap;
 
 out vec4 fragColor;
 
-const float radius = 5;
+const float radius = 10;
 
 float linearizeDepth(float depth) {
     float near = 1.0; 
@@ -70,7 +70,7 @@ void main() {
 	//fragColor = vec4(pos, 1);
 	//fragColor = vec4(norm, 1);
 	//fragColor = vec4(origin, 1);
-	fragColor = vec4(occlusion);
+	fragColor = vec4(pow(occlusion, 1));
 	//fragColor = texture(noiseMap, coord);
 	//fragColor = vec4(linearizeDepth(texture(depthMap, coord).x));
 }

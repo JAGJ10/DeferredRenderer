@@ -10,7 +10,6 @@ uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
 uniform sampler2D depthMap;
-uniform sampler2D noiseMap;
 
 out vec4 fragColor;
 
@@ -34,5 +33,4 @@ void main() {
 	//fragColor = vec4(diffuse, 1);
 	//fragColor = vec4(normalize(norm * 2 - 1), 1);
 	//fragColor = vec4(linearizeDepth(depth));
-	fragColor = texture(noiseMap, coord);
 }
