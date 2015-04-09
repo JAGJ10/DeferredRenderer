@@ -6,7 +6,7 @@ uniform sampler2D ssaoTex;
 
 out vec4 fragColor;
 
-const int blurSize = 2;
+const int blurSize = 1;
 
 void main() {
 	vec4 result = vec4(0.0);
