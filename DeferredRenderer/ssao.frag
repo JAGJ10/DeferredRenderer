@@ -35,7 +35,7 @@ void main() {
 	vec2 ndc = coord * 2.0 - 1.0;
 	vec3 viewRay = vec3(ndc.x * fov * 1, ndc.y * fov, 1.0);
 	vec3 origin = viewRay * depth;
-	//origin = texture(positionMap, coord).xyz;
+	//origin = vec3(pos.xy, depth);
 
 	vec3 rVec = texture(noiseMap, coord * noiseScale).xyz * 2.0 - 1.0;
 	vec3 tangent = normalize(rVec - norm * dot(rVec, norm));
@@ -68,5 +68,6 @@ void main() {
 	//fragColor = vec4(norm, 1);
 	//fragColor = vec4(origin, 1);
 	fragColor = vec4(occlusion);
+	//fragColor = texture(noiseMap, coord);
 	//fragColor = vec4(linearizeDepth(texture(depthMap, coord).x));
 }

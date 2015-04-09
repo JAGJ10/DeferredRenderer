@@ -57,6 +57,7 @@ void Scene::initKernel() {
 	for (int i = 0; i < 16; i++) {
 		float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 		glm::vec3 n(r1 * 2.0f - 1.0f, r2 * 2.0f - 1.0f, 0);
 		n = glm::normalize(n);
 		noise.push_back(n);
@@ -65,13 +66,20 @@ void Scene::initKernel() {
 	glGenTextures(1, &noiseTex);
 	glBindTexture(GL_TEXTURE_2D, noiseTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGBA, GL_FLOAT, &noise[0]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	/*glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	GLfloat fLargest;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
 
-	noiseScale = glm::vec2(1.0f / (width / 4), 1.0f / (height / 4));
+	noiseScale = glm::vec2(width / 4, height / 4);
 }
 
 void Scene::renderScene(Camera &cam) {

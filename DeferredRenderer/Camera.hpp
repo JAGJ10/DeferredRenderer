@@ -33,7 +33,7 @@ public:
 		right(glm::cross(up, (eye - front))),
 		yaw(-90.0f),
 		pitch(0.0f),
-		speed(5.0f),
+		speed(20.0f),
 		mouseSens(4.0f),
 		zoom(45.0f)
 	{}
