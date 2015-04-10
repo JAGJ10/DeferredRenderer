@@ -2,10 +2,11 @@
 
 using namespace std;
 
-static const int kernelSize = 16;
+static const int kernelSize = 64;
+static const int noiseSize = 4;
 static const int blurSize = 2;
 
-Scene::Scene(int width, int height) : 
+Scene::Scene(int width, int height) :
 width(width), height(height), 
 gBuffer(GBuffer(width, height)), 
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
@@ -45,7 +46,7 @@ void Scene::loadMeshes() {
 		meshes[i].updateBuffers(sm.first[i].mesh.positions, sm.first[i].mesh.indices, sm.first[i].mesh.normals);
 		meshes[i].ambient = glm::vec3(sm.second[i].ambient[0], sm.second[i].ambient[1], sm.second[i].ambient[2]);
 		meshes[i].diffuse = glm::vec3(sm.second[i].diffuse[0], sm.second[i].diffuse[1], sm.second[i].diffuse[2]);
-		//meshes[i].specular = glm::vec3(sm.second[i].specular[0], sm.second[i].specular[1], sm.second[i].specular[2]);
+		meshes[i].specular = sm.second[i].specular[0];
 	}
 
 	initKernel();
@@ -77,7 +78,6 @@ void Scene::initKernel() {
 		noise.push_back(n);
 	}
 
-	int noiseSize = int(sqrt(kernelSize));
 	glGenTextures(1, &noiseTex);
 	glBindTexture(GL_TEXTURE_2D, noiseTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, noiseSize, noiseSize, 0, GL_RGBA, GL_FLOAT, &noise[0]);
@@ -94,34 +94,37 @@ void Scene::renderScene(Camera &cam) {
 	//Set camera
 	glm::mat4 mView = cam.getMView();
 	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
-	//glm::mat4 projection = glm::infinitePerspective(cam.zoom, 0.1f, 1.0f);
-	glm::mat4 projection = glm::perspective(cam.zoom, 1.78f, 1.0f, 1000.0f);
+	glm::mat4 projection = glm::infinitePerspective(cam.zoom, 1.78f, 0.1f);
+	//glm::mat4 projection = glm::perspective(cam.zoom, 1.78f, 1.0f, 1000.0f);
 
 	//Clear buffer
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	//Render to gBuffer
 	glUseProgram(firstPass.program);
 	gBuffer.bindDraw();
 	gBuffer.setDrawBuffers();
-	
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	firstPass.setUniformmat4("mView", mView);
 	firstPass.setUniformmat4("projection", projection);
 	firstPass.setUniformmat3("mNormal", normalMatrix);
 	
+	glDepthMask(GL_TRUE);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_DEPTH_TEST);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	
 	for (auto &i : meshes) {
-		firstPass.setUniformv3f("diffuse", i.diffuse);
+		firstPass.setUniformv3f("diffuse", i.diffuse + i.ambient);
+		firstPass.setUniformf("specular", i.specular);
 		i.renderFromBuffers();
 	}
 	
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
+	glDepthMask(GL_FALSE);
 
 	//gBuffer.unbindDraw();
 
@@ -136,8 +139,8 @@ void Scene::renderScene(Camera &cam) {
 	ssao.setUniformi("kernelSize", kernelSize);
 	ssao.setUniformf("fov", tanf(cam.zoom * 0.5f));
 	ssao.setUniformv2f("noiseScale", noiseScale);
-	ssao.setUniform3fv("kernel", GLuint(kernel.size()), &kernel[0]);
-
+	ssao.setUniform3fv("kernel", kernelSize, &kernel[0]);
+	
 	gBuffer.setGeomTextures();
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, noiseTex);
@@ -156,16 +159,14 @@ void Scene::renderScene(Camera &cam) {
 	glUseProgram(lightPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
-
-	//blur.setUniformi("ssaoMap", 0);
-
 	gBuffer.setGeomTextures();
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
 	lightPass.setUniformi("positionMap", 0);
 	lightPass.setUniformi("normalMap", 1);
 	lightPass.setUniformi("colorMap", 2);
 	lightPass.setUniformi("depthMap", 3);
+	lightPass.setUniformi("ssaoMap", 4);
 
 	fsQuad.renderFromBuffers();
 

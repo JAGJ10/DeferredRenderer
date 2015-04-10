@@ -2,8 +2,6 @@
 
 in vec2 coord;
 
-#define maxKernel 256
-
 uniform mat4 mView;
 uniform mat3 mNormal;
 uniform mat4 projection;
@@ -11,7 +9,7 @@ uniform mat4 projection;
 uniform int kernelSize;
 uniform float fov;
 uniform vec2 noiseScale;
-uniform vec3 kernel[maxKernel];
+uniform vec3 kernel[500];
 
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
