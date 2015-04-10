@@ -35,7 +35,7 @@ fsQuad(FullscreenQuad())
 Scene::~Scene() {}
 
 void Scene::loadMeshes() {
-	ifstream infile("rungholt.cobj", std::ifstream::binary);
+	ifstream infile("scenes/rungholt.cobj", std::ifstream::binary);
 	pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> sm = read(infile);
 
 	meshes.clear();

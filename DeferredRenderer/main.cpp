@@ -48,7 +48,7 @@ int main() {
 	Camera cam = Camera();
 	Scene scene(width, height);
 
-	/*std::string inputfile = "rungholt.obj";
+	/*std::string inputfile = "scenes/rungholt.obj";
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
@@ -59,7 +59,7 @@ int main() {
 		exit(1);
 	}
 
-	std::ofstream outfile("rungholt.cobj", std::ifstream::binary);
+	std::ofstream outfile("scenes/rungholt.cobj", std::ifstream::binary);
 	write(outfile, shapes, materials);
 	return 1;*/
 	scene.loadMeshes();
