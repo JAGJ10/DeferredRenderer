@@ -32,8 +32,8 @@ float linearizeDepth(float depth) {
 }
 
 void main() {
-    vec3 norm = normalize(texture(normalMap, coord).xyz);
-	//vec3 norm = normalize(texture(normalMap, coord).xyz);
+    vec3 normal = normalize(texture(normalMap, coord).xyz);
+	//vec3 normal = normalize(texture(normalMap, coord).xyz);
 	vec3 pos = texture(positionMap, coord).xyz;
 	float depth = linearizeDepth(texture(depthMap, coord).x);
 
@@ -43,9 +43,9 @@ void main() {
 	vec3 origin = pos;
 
 	vec3 rVec = texture(noiseMap, coord * noiseScale).xyz * 2.0 - 1.0;
-	vec3 tangent = normalize(rVec - norm * dot(rVec, norm));
-	vec3 bitangent = cross(norm, tangent);
-	mat3 tbn = mat3(tangent, bitangent, norm);
+	vec3 tangent = normalize(rVec - normal * dot(rVec, normal));
+	vec3 bitangent = cross(normal, tangent);
+	mat3 tbn = mat3(tangent, bitangent, normal);
 
 	float occlusion = 0.0f;
 	for (int i = 0; i < kernelSize; i++) {
@@ -71,7 +71,8 @@ void main() {
 
 	occlusion = 1.0 - (occlusion / float(kernelSize));
 
-	//fragColor = vec4(norm, 1);
-	fragColor = vec4(pow(occlusion, occlPower));
+	//fragColor = vec4(normal, 1);
+	fragColor = vec4(vec3(pow(occlusion, occlPower)), 1);
 	//fragColor = vec4(linearizeDepth(texture(depthMap, coord).x));
+	//fragColor = texture(colorMap, coord);
 }

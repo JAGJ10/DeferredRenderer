@@ -184,8 +184,8 @@
   <ItemGroup>
     <None Include="blur.frag" />
     <None Include="blur.vert" />
-    <None Include="fsquad.frag" />
-    <None Include="fsquad.vert" />
+    <None Include="ubershader.frag" />
+    <None Include="ubershader.vert" />
     <None Include="gbuffer.frag" />
     <None Include="gbuffer.vert" />
     <None Include="ssao.frag" />

@@ -166,12 +166,6 @@
     <None Include="gbuffer.vert">
       <Filter>shaders\gbuffer</Filter>
     </None>
-    <None Include="fsquad.frag">
-      <Filter>shaders\fsquad</Filter>
-    </None>
-    <None Include="fsquad.vert">
-      <Filter>shaders\fsquad</Filter>
-    </None>
     <None Include="ssao.frag">
       <Filter>shaders\ssao</Filter>
     </None>
@@ -183,6 +177,12 @@
     </None>
     <None Include="blur.frag">
       <Filter>shaders\blur</Filter>
+    </None>
+    <None Include="ubershader.frag">
+      <Filter>shaders\fsquad</Filter>
+    </None>
+    <None Include="ubershader.vert">
+      <Filter>shaders\fsquad</Filter>
     </None>
   </ItemGroup>
 </Project>

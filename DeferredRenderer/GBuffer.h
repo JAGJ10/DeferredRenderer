@@ -5,12 +5,12 @@
 
 class GBuffer {
 public:
+	GLuint position, normal, color, depth, effect1, effect2;
+
 	GBuffer(int widthIn, int heightIn);
 	~GBuffer();
 	
 	GLuint getFBO() const;
-	GLuint getDepth() const;
-	GLuint getPostEffects() const;
 	int getWidth() const;
 	int getHeight() const;
 	void setDrawBuffers();
@@ -23,13 +23,12 @@ public:
 	void unbind();
 	void unbindDraw();
 	void unbindRead();
-	void setTextures();
+	void setGeomTextures();
 
 private:
 	GLenum drawBuffers[4];
 
-	GLuint fbo, depth, postEffects;
-	GLuint position, normal, color;
+	GLuint fbo;	
 
 	int width, height;
 };

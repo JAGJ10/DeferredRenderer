@@ -10,11 +10,11 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 	glGenTextures(1, &normal);
 	glGenTextures(1, &color);
 	glGenTextures(1, &depth);
-	glGenTextures(1, &postEffects);
+	glGenTextures(1, &effect1);
 
 	//Position
 	glBindTexture(GL_TEXTURE_2D, position);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -37,7 +37,7 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	//Create post process effect buffer
-	glBindTexture(GL_TEXTURE_2D, postEffects);
+	glBindTexture(GL_TEXTURE_2D, effect1);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -57,7 +57,7 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, position, 0);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal, 0);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, color, 0);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, postEffects, 0);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, effect1, 0);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 	
 	for (int i = 0; i < 4; i++) {
@@ -77,20 +77,12 @@ GBuffer::~GBuffer() {
 		glDeleteTextures(1, &normal);
 		glDeleteTextures(1, &color);
 		glDeleteTextures(1, &depth);
-		glDeleteTextures(1, &postEffects);
+		glDeleteTextures(1, &effect1);
 	}
 }
 
 GLuint GBuffer::getFBO() const {
 	return fbo;
-}
-
-GLuint GBuffer::getDepth() const {
-	return depth;
-}
-
-GLuint GBuffer::getPostEffects() const{
-	return postEffects;
 }
 
 int GBuffer::getWidth() const {
@@ -137,7 +129,7 @@ void GBuffer::unbindRead() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 }
 
-void GBuffer::setTextures() {
+void GBuffer::setGeomTextures() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, position);
 

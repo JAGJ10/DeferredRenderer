@@ -11,7 +11,7 @@ gBuffer(GBuffer(width, height)),
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
-lightPass(Shader("fsquad.vert", "fsquad.frag")), 
+lightPass(Shader("ubershader.vert", "ubershader.frag")), 
 fsQuad(FullscreenQuad())
 {
 	vector<GLfloat> positions = {
@@ -35,14 +35,17 @@ Scene::~Scene() {}
 
 void Scene::loadMeshes() {
 	ifstream infile("rungholt.cobj", std::ifstream::binary);
-	vector<tinyobj::shape_t> shapes = read(infile);
+	pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> sm = read(infile);
 
 	meshes.clear();
-	meshes.resize(shapes.size());
+	meshes.resize(sm.first.size());
 
-	for (int i = 0; i < shapes.size(); i++) {
+	for (int i = 0; i < sm.first.size(); i++) {
 		meshes[i].create();
-		meshes[i].updateBuffers(shapes[i].mesh.positions, shapes[i].mesh.indices, shapes[i].mesh.normals);
+		meshes[i].updateBuffers(sm.first[i].mesh.positions, sm.first[i].mesh.indices, sm.first[i].mesh.normals);
+		meshes[i].ambient = glm::vec3(sm.second[i].ambient[0], sm.second[i].ambient[1], sm.second[i].ambient[2]);
+		meshes[i].diffuse = glm::vec3(sm.second[i].diffuse[0], sm.second[i].diffuse[1], sm.second[i].diffuse[2]);
+		//meshes[i].specular = glm::vec3(sm.second[i].specular[0], sm.second[i].specular[1], sm.second[i].specular[2]);
 	}
 
 	initKernel();
@@ -92,7 +95,7 @@ void Scene::renderScene(Camera &cam) {
 	glm::mat4 mView = cam.getMView();
 	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
 	//glm::mat4 projection = glm::infinitePerspective(cam.zoom, 0.1f, 1.0f);
-	glm::mat4 projection = glm::perspective(cam.zoom, 1.0f, 1.0f, 1000.0f);
+	glm::mat4 projection = glm::perspective(cam.zoom, 1.78f, 1.0f, 1000.0f);
 
 	//Clear buffer
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -113,6 +116,7 @@ void Scene::renderScene(Camera &cam) {
 	glEnable(GL_DEPTH_TEST);
 	
 	for (auto &i : meshes) {
+		firstPass.setUniformv3f("diffuse", i.diffuse);
 		i.renderFromBuffers();
 	}
 	
@@ -121,7 +125,7 @@ void Scene::renderScene(Camera &cam) {
 
 	//gBuffer.unbindDraw();
 
-	//Screen Space Ambient Occlusion pass (and render to screen)
+	//Screen Space Ambient Occlusion pass
 	glUseProgram(ssao.program);
 	gBuffer.setDrawEffect();
 
@@ -134,7 +138,7 @@ void Scene::renderScene(Camera &cam) {
 	ssao.setUniformv2f("noiseScale", noiseScale);
 	ssao.setUniform3fv("kernel", GLuint(kernel.size()), &kernel[0]);
 
-	gBuffer.setTextures();
+	gBuffer.setGeomTextures();
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, noiseTex);
 
@@ -149,30 +153,39 @@ void Scene::renderScene(Camera &cam) {
 	gBuffer.unbindDraw();
 
 	//Blur over SSAO to filter out noise (TODO: use better blur)
-	glUseProgram(blur.program);
+	glUseProgram(lightPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.getPostEffects());
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
 
-	blur.setUniformi("ssaoTex", 0);
+	//blur.setUniformi("ssaoMap", 0);
+
+	gBuffer.setGeomTextures();
+	lightPass.setUniformi("positionMap", 0);
+	lightPass.setUniformi("normalMap", 1);
+	lightPass.setUniformi("colorMap", 2);
+	lightPass.setUniformi("depthMap", 3);
 
 	fsQuad.renderFromBuffers();
 
 	cout << glGetError() << endl;
 }
 
-std::vector<tinyobj::shape_t> Scene::read(std::istream& stream) {
+pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> Scene::read(std::istream& stream) {
 	assert(sizeof(float) == sizeof(int));
 	const auto sz = sizeof(int);
 
 	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
 
 	int nMeshes = 0;
 	int nMatProperties = 0;
 	stream.read((char*)&nMeshes, sz);
 	stream.read((char*)&nMatProperties, sz);
 	shapes.resize(nMeshes);
+	materials.resize(nMeshes);
+
 	for (size_t i = 0; i < nMeshes; ++i) {
 		int nVertices = 0, nNormals = 0, nTexcoords = 0, nIndices = 0;
 		stream.read((char*)&nVertices, sz);
@@ -184,13 +197,17 @@ std::vector<tinyobj::shape_t> Scene::read(std::istream& stream) {
 		shapes[i].mesh.normals.resize(nNormals);
 		shapes[i].mesh.texcoords.resize(nTexcoords);
 		shapes[i].mesh.indices.resize(nIndices);
-
-		stream.read((char*)&shapes[i].mesh.positions[0], nVertices  * sz);
-		stream.read((char*)&shapes[i].mesh.normals[0], nNormals   * sz);
+		
+		stream.read((char*)&shapes[i].mesh.positions[0], nVertices * sz);
+		stream.read((char*)&shapes[i].mesh.normals[0], nNormals * sz);
 		stream.read((char*)&shapes[i].mesh.texcoords[0], nTexcoords * sz);
-		stream.read((char*)&shapes[i].mesh.indices[0], nIndices   * sz);
-		//stream.read((char*)&shapes[i].material.ambient[0], 3 * sz);
+		stream.read((char*)&shapes[i].mesh.indices[0], nIndices * sz);
+		stream.read((char*)&materials[i].ambient[0], 3 * sz);
+		stream.read((char*)&materials[i].diffuse[0], 3 * sz);
+		stream.read((char*)&materials[i].specular[0], 3 * sz);
 	}
 
-	return shapes;
+	pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> ret(shapes, materials);
+
+	return ret;
 }

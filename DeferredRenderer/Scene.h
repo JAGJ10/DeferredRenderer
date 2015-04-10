@@ -20,7 +20,7 @@ public:
 
 	void loadMeshes();
 	void renderScene(Camera &cam);
-	std::vector<tinyobj::shape_t> read(std::istream& stream);
+	std::pair<std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>> read(std::istream& stream);
 
 private:
 	int width, height;

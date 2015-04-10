@@ -33,14 +33,14 @@ public:
 		right(glm::cross(up, (eye - front))),
 		yaw(-90.0f),
 		pitch(0.0f),
-		speed(20.0f),
+		speed(50.0f),
 		mouseSens(4.0f),
 		zoom(45.0f)
 	{}
 
 	glm::mat4 getMView() {
-		return glm::lookAt(eye, glm::vec3(0.0f, 0.0f, 0.0f), up);
-		//return glm::lookAt(eye, eye + front, up);
+		//return glm::lookAt(eye, glm::vec3(0.0f, 0.0f, 0.0f), up);
+		return glm::lookAt(eye, eye + front, up);
 	}
 
 	void wasdMovement(Movement dir, float deltaTime) {

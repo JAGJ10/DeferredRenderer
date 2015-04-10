@@ -11,7 +11,7 @@
 #include <crtdbg.h>
 
 std::vector<tinyobj::shape_t> read(std::istream& stream);
-void write(std::ostream& stream, const std::vector<tinyobj::shape_t>& shapes);
+void write(std::ostream& stream, const std::vector<tinyobj::shape_t>& shapes, const std::vector<tinyobj::material_t>& materials);
 
 static const int width = 1280;
 static const int height = 720;
@@ -47,6 +47,21 @@ int main() {
 
 	Camera cam = Camera();
 	Scene scene(width, height);
+
+	/*std::string inputfile = "rungholt.obj";
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+
+	std::string err = tinyobj::LoadObj(shapes, materials, inputfile.c_str());
+
+	if (!err.empty()) {
+		std::cerr << err << std::endl;
+		exit(1);
+	}
+
+	std::ofstream outfile("rungholt.cobj", std::ifstream::binary);
+	write(outfile, shapes, materials);
+	return 1;*/
 	scene.loadMeshes();
 
 	while (!glfwWindowShouldClose(window)) {
@@ -100,14 +115,14 @@ void handleInput(GLFWwindow* window, Camera &cam) {
 		cam.mouseMovement((float(xpos) - lastX), (lastY - float(ypos)), deltaTime);
 }
 
-void write(std::ostream& stream, const std::vector<tinyobj::shape_t>& shapes) {
+void write(std::ostream& stream, const std::vector<tinyobj::shape_t>& shapes, const std::vector<tinyobj::material_t>& materials) {
 	assert(sizeof(float) == sizeof(int));
 	const auto sz = sizeof(int);
 	const int nMeshes = static_cast<int>(shapes.size());
 	const int nMatProperties = 3;
 
-	stream.write((const char*)&nMeshes, sz);        // nMeshes
-	stream.write((const char*)&nMatProperties, sz); // nMatProperties
+	stream.write((const char*)&nMeshes, sz);        //nMeshes
+	stream.write((const char*)&nMatProperties, sz); //nMatProperties
 
 	for (size_t i = 0; i < nMeshes; ++i) {
 		const int nVertices = (int)shapes[i].mesh.positions.size();
@@ -115,21 +130,23 @@ void write(std::ostream& stream, const std::vector<tinyobj::shape_t>& shapes) {
 		const int nTexcoords = (int)shapes[i].mesh.texcoords.size();
 		const int nIndices = (int)shapes[i].mesh.indices.size();
 
-		// Write nVertices, nNormals,, nTexcoords, nIndices
-		// Write #nVertices positions
-		// Write #nVertices normals
-		// Write #nVertices texcoord
-		// Write #nIndices  indices
-		// Write #nMatProperties material properties
+		//Write nVertices, nNormals,, nTexcoords, nIndices
+		//Write #nVertices positions
+		//Write #nVertices normals
+		//Write #nVertices texcoord
+		//Write #nIndices  indices
+		//Write #nMatProperties material properties
 		stream.write((const char*)&nVertices, sz);
 		stream.write((const char*)&nNormals, sz);
 		stream.write((const char*)&nTexcoords, sz);
 		stream.write((const char*)&nIndices, sz);
 
-		stream.write((const char*)&shapes[i].mesh.positions[0], nVertices  * sz);
-		stream.write((const char*)&shapes[i].mesh.normals[0], nNormals   * sz);
+		stream.write((const char*)&shapes[i].mesh.positions[0], nVertices * sz);
+		stream.write((const char*)&shapes[i].mesh.normals[0], nNormals * sz);
 		stream.write((const char*)&shapes[i].mesh.texcoords[0], nTexcoords * sz);
-		stream.write((const char*)&shapes[i].mesh.indices[0], nIndices   * sz);
-		//stream.write((const char*)&shapes[i].material.ambient[0], 3 * sz);
+		stream.write((const char*)&shapes[i].mesh.indices[0], nIndices * sz);
+		stream.write((const char*)&materials[i].ambient[0], 3 * sz);
+		stream.write((const char*)&materials[i].diffuse[0], 3 * sz);
+		stream.write((const char*)&materials[i].specular[0], 3 * sz);
 	}
 }
