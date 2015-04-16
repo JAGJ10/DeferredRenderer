@@ -15,20 +15,6 @@ blur(Shader("blur.vert", "blur.frag")),
 lightPass(Shader("ubershader.vert", "ubershader.frag")), 
 fsQuad(FullscreenQuad())
 {
-	vector<GLfloat> positions = {
-		1.0f, 1.0f,	   //Top Right
-		1.0f, -1.0f,   //Bottom Right
-		-1.0f, -1.0f,  //Bottom Left
-		-1.0f, 1.0f	   //Top Left 
-	};
-	vector<GLuint> indices = {
-		0, 1, 3,	//First Triangle
-		1, 2, 3		//Second Triangle
-	};
-
-	fsQuad.create();
-	fsQuad.updateBuffers(positions, indices);
-
 	srand(int(time(NULL)));
 }
 
@@ -158,6 +144,8 @@ void Scene::renderScene(Camera &cam) {
 	//Blur over SSAO to filter out noise (TODO: use better blur)
 	glUseProgram(lightPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	lightPass.setUniformmat3("mNormal", normalMatrix);
 
 	gBuffer.setGeomTextures();
 	glActiveTexture(GL_TEXTURE4);

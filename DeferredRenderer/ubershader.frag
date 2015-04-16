@@ -14,7 +14,7 @@ uniform sampler2D ssaoMap;
 
 out vec4 fragColor;
 
-const vec3 lightDir = vec3(0, 1, 0);
+const vec3 lightDir = vec3(0, -1, 0);
 const float specularPower = 16.0f;
 const vec3 lightColor = vec3(1, 1, 1);
 

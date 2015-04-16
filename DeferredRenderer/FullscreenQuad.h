@@ -10,7 +10,6 @@ public:
 	FullscreenQuad();
 	~FullscreenQuad();
 
-	void create();
 	void clear();
 	void updateBuffers(std::vector<float>& positions, std::vector<GLuint>& indices);
 	void renderFromBuffers();
