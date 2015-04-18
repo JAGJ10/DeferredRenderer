@@ -20,7 +20,11 @@ fsQuad(FullscreenQuad())
 	srand(int(time(NULL)));
 }
 
-Scene::~Scene() {}
+Scene::~Scene() {
+	if (noiseTex != 0) {
+		glDeleteBuffers(1, &noiseTex);
+	}
+}
 
 void Scene::loadMeshes() {
 	ifstream infile("scenes/rungholt.cobj", std::ifstream::binary);
