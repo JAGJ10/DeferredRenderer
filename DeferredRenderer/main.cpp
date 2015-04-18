@@ -46,7 +46,7 @@ int main() {
 	glViewport(0, 0, width, height);
 
 	Camera cam = Camera();
-	Scene scene(width, height);
+	Scene scene(width, height, cam);
 
 	/*std::string inputfile = "sponza.obj";
 	std::vector<tinyobj::shape_t> shapes;

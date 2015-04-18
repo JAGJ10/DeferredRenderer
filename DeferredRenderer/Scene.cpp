@@ -6,7 +6,7 @@ static const int kernelSize = 64;
 static const int noiseSize = 4;
 static const int blurSize = 2;
 
-Scene::Scene(int width, int height) :
+Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
 gBuffer(GBuffer(width, height)), 
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
@@ -15,6 +15,8 @@ blur(Shader("blur.vert", "blur.frag")),
 lightPass(Shader("ubershader.vert", "ubershader.frag")), 
 fsQuad(FullscreenQuad())
 {
+	aspectRatio = float(width) / float(height);
+	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
 	srand(int(time(NULL)));
 }
 
@@ -78,74 +80,25 @@ void Scene::initKernel() {
 
 void Scene::renderScene(Camera &cam) {
 	//Set camera
-	glm::mat4 mView = cam.getMView();
-	glm::mat3 normalMatrix = glm::mat3(glm::inverseTranspose(mView));
-	glm::mat4 projection = glm::infinitePerspective(cam.zoom, 1.78f, 0.1f);
-	//glm::mat4 projection = glm::perspective(cam.zoom, 1.78f, 1.0f, 1000.0f);
-
+	mView = cam.getMView();
+	normalMatrix = glm::mat3(glm::inverseTranspose(mView));
+	
 	//Clear buffer
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	//Render to gBuffer
-	glUseProgram(firstPass.program);
-	gBuffer.bindDraw();
-	gBuffer.setDrawBuffers();
-
-	firstPass.setUniformmat4("mView", mView);
-	firstPass.setUniformmat4("projection", projection);
-	firstPass.setUniformmat3("mNormal", normalMatrix);
-	
-	glDepthMask(GL_TRUE);
-	glEnable(GL_STENCIL_TEST);
-	glEnable(GL_DEPTH_TEST);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	
-	for (auto &i : meshes) {
-		firstPass.setUniformv3f("diffuse", i.diffuse + i.ambient);
-		firstPass.setUniformf("specular", i.specular);
-		i.renderFromBuffers();
-	}
-	
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_STENCIL_TEST);
-	glDepthMask(GL_FALSE);
+	//Render geometry to gBuffer
+	geometryPass();
 
 	//gBuffer.unbindDraw();
 
-	//Screen Space Ambient Occlusion pass
-	glUseProgram(ssao.program);
-	gBuffer.setDrawEffect();
-
-	ssao.setUniformmat4("mView", mView);
-	ssao.setUniformmat4("projection", projection);
-	ssao.setUniformmat3("mNormal", normalMatrix);
-
-	ssao.setUniformi("kernelSize", kernelSize);
-	ssao.setUniformf("fov", tanf(cam.zoom * 0.5f));
-	ssao.setUniformv2f("noiseScale", noiseScale);
-	ssao.setUniform3fv("kernel", kernelSize, &kernel[0]);
-	
-	gBuffer.setGeomTextures();
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, noiseTex);
-
-	ssao.setUniformi("positionMap", 0);
-	ssao.setUniformi("normalMap", 1);
-	ssao.setUniformi("colorMap", 2);
-	ssao.setUniformi("depthMap", 3);
-	ssao.setUniformi("noiseMap", 4);
-
-	fsQuad.renderFromBuffers();
-
-	gBuffer.unbindDraw();
+	//SSAO to gBuffer's effect1 texture
+	ssaoPass();
 
 	//Blur over SSAO to filter out noise (TODO: use better blur)
+
+	//Composition pass (directional light + light buffer)
 	glUseProgram(lightPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	lightPass.setUniformmat3("mNormal", normalMatrix);
 
 	gBuffer.setGeomTextures();
 	glActiveTexture(GL_TEXTURE4);
@@ -159,6 +112,65 @@ void Scene::renderScene(Camera &cam) {
 	fsQuad.renderFromBuffers();
 
 	cout << glGetError() << endl;
+}
+
+void Scene::geometryPass() {
+	glUseProgram(firstPass.program);
+	gBuffer.bindDraw();
+	gBuffer.setDrawBuffers();
+
+	firstPass.setUniformmat4("mView", mView);
+	firstPass.setUniformmat4("projection", projection);
+	firstPass.setUniformmat3("mNormal", normalMatrix);
+
+	glDepthMask(GL_TRUE);
+	glEnable(GL_STENCIL_TEST);
+	glEnable(GL_DEPTH_TEST);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	for (auto &i : meshes) {
+		firstPass.setUniformv3f("diffuse", i.diffuse + i.ambient);
+		firstPass.setUniformf("specular", i.specular);
+		i.renderFromBuffers();
+	}
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glDepthMask(GL_FALSE);
+}
+
+void Scene::ssaoPass() {
+	glUseProgram(ssao.program);
+	gBuffer.setDrawEffect();
+
+	ssao.setUniformmat4("projection", projection);
+	ssao.setUniformi("kernelSize", kernelSize);
+	ssao.setUniformv2f("noiseScale", noiseScale);
+	ssao.setUniform3fv("kernel", kernelSize, &kernel[0]);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, noiseTex);
+
+	ssao.setUniformi("positionMap", 0);
+	ssao.setUniformi("normalMap", 1);
+	ssao.setUniformi("noiseMap", 2);
+
+	fsQuad.renderFromBuffers();
+
+	gBuffer.unbindDraw();
+}
+
+void Scene::blurPass() {
+
+}
+
+void Scene::pointLightPass() {
+
 }
 
 pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> Scene::read(std::istream& stream) {

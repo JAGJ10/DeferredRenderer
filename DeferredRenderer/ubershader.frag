@@ -2,10 +2,6 @@
 
 in vec2 coord;
 
-uniform mat4 mView;
-uniform mat3 mNormal;
-uniform mat4 projection;
-
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
@@ -17,13 +13,6 @@ out vec4 fragColor;
 const vec3 lightDir = vec3(0, -1, 0);
 const float specularPower = 16.0f;
 const vec3 lightColor = vec3(1, 1, 1);
-
-float linearizeDepth(float depth) {
-    float near = 0.1; 
-    float far = 1000.0; 
-    float z = depth * 2.0 - 1.0; // Back to NDC 
-    return (2.0 * near) / (far + near - z * (far - near));	
-}
 
 void main() {
     vec3 n = normalize(texture(normalMap, coord).xyz);

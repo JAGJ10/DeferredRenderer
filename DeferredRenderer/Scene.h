@@ -15,15 +15,18 @@
 
 class Scene {
 public:
-	Scene(int width, int height);
+	Scene(int width, int height, Camera& cam);
 	~Scene();
 
 	void loadMeshes();
 	void renderScene(Camera &cam);
-	std::pair<std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>> read(std::istream& stream);
 
 private:
 	int width, height;
+	float aspectRatio;
+
+	glm::mat4 mView, projection;
+	glm::mat3 normalMatrix;
 
 	GLuint noiseTex;
 	glm::vec2 noiseScale;
@@ -40,6 +43,11 @@ private:
 	std::vector<float> kernel;
 
 	void initKernel();
+	void geometryPass();
+	void ssaoPass();
+	void blurPass();
+	void pointLightPass();
+	std::pair<std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>> read(std::istream& stream);
 };
 
 #endif
