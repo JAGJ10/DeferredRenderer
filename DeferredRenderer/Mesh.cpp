@@ -30,11 +30,21 @@ void Mesh::updateBuffers(vector<float>& positions, vector<GLuint>& indices, vect
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), &indices[0], GL_STATIC_DRAW);
 }
 
+void Mesh::updateBuffers(vector<glm::vec3>& positions, vector<GLuint>& indices) {
+	numIndices = int(indices.size());
+	
+	positionBuffer.bind(GL_ARRAY_BUFFER);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * positions.size(), &positions[0], GL_STATIC_DRAW);
+	
+	indexBuffer.bind(GL_ELEMENT_ARRAY_BUFFER);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), &indices[0], GL_STATIC_DRAW);
+}
+
 void Mesh::clear() {
 	numIndices = 0;
 }
 
-void Mesh::renderFromBuffers() {
+void Mesh::render() {
 	glBindVertexArray(vao);
 
 	positionBuffer.bind(GL_ARRAY_BUFFER);

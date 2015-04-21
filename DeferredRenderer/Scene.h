@@ -10,6 +10,8 @@
 #include "FullscreenQuad.h"
 #include "Camera.hpp"
 #include "Shader.h"
+#include "PointLight.h"
+#include "MeshHelper.h"
 #include "tiny_obj_loader.h"
 #include <time.h>
 
@@ -35,10 +37,12 @@ private:
 	Shader ssao;
 	Shader blur;
 	Shader lightPass;
+	Shader finalPass;
 	FullscreenQuad fsQuad;
 	GBuffer gBuffer;
 	//Octree octree;
 	//std::vector<SceneObject*> visibleObjects;
+	Mesh sphere;
 	std::vector<Mesh> meshes;
 	std::vector<float> kernel;
 

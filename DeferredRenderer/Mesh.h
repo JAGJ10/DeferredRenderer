@@ -16,8 +16,9 @@ public:
 
 	void create();
 	void updateBuffers(std::vector<float>& positions, std::vector<GLuint>& indices, std::vector<float>& normals);
+	void updateBuffers(std::vector<glm::vec3>& positions, std::vector<GLuint>& indices);
 	void clear();
-	void renderFromBuffers();
+	void render();
 	void setAttributes();
 	bool hasBuffer() const;
 

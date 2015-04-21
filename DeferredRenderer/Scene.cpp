@@ -12,8 +12,10 @@ gBuffer(GBuffer(width, height)),
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
-lightPass(Shader("ubershader.vert", "ubershader.frag")), 
-fsQuad(FullscreenQuad())
+lightPass(Shader("light.vert", "light.frag")),
+finalPass(Shader("ubershader.vert", "ubershader.frag")), 
+fsQuad(FullscreenQuad()),
+sphere(Mesh())
 {
 	aspectRatio = float(width) / float(height);
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
@@ -40,6 +42,12 @@ void Scene::loadMeshes() {
 		meshes[i].diffuse = glm::vec3(sm.second[i].diffuse[0], sm.second[i].diffuse[1], sm.second[i].diffuse[2]);
 		meshes[i].specular = sm.second[i].specular[0];
 	}
+
+	vector<glm::vec3> positions;
+	vector<GLuint> indices;
+	generatePatchedSphere(positions, indices);
+	sphere.create();
+	sphere.updateBuffers(positions, indices);
 
 	initKernel();
 }
@@ -95,25 +103,35 @@ void Scene::renderScene(Camera &cam) {
 
 	//gBuffer.unbindDraw();
 
+	//Render lights to light buffer
+	pointLightPass();
+
 	//SSAO to gBuffer's effect1 texture
-	ssaoPass();
+	//ssaoPass();
 
 	//Blur over SSAO to filter out noise (TODO: use better blur)
 
 	//Composition pass (directional light + light buffer)
-	glUseProgram(lightPass.program);
+	/*glUseProgram(finalPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	gBuffer.setGeomTextures();
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
-	lightPass.setUniformi("positionMap", 0);
-	lightPass.setUniformi("normalMap", 1);
-	lightPass.setUniformi("colorMap", 2);
-	lightPass.setUniformi("depthMap", 3);
-	lightPass.setUniformi("ssaoMap", 4);
+	finalPass.setUniformmat4("mView", mView);
 
-	fsQuad.renderFromBuffers();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.color);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
+
+	finalPass.setUniformi("positionMap", 0);
+	finalPass.setUniformi("normalMap", 1);
+	finalPass.setUniformi("colorMap", 2);
+	finalPass.setUniformi("ssaoMap", 3);
+
+	fsQuad.renderFromBuffers();*/
 
 	cout << glGetError() << endl;
 }
@@ -130,13 +148,14 @@ void Scene::geometryPass() {
 	glDepthMask(GL_TRUE);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	for (auto &i : meshes) {
 		firstPass.setUniformv3f("diffuse", i.diffuse + i.ambient);
 		firstPass.setUniformf("specular", i.specular);
-		i.renderFromBuffers();
+		i.render();
 	}
 
 	glDisable(GL_DEPTH_TEST);
@@ -174,7 +193,38 @@ void Scene::blurPass() {
 }
 
 void Scene::pointLightPass() {
+	PointLight pl;
+	pl.color = glm::vec3(1);
+	pl.position = glm::vec3(0, 10, 0);
+	pl.radius = 100;
+	glUseProgram(lightPass.program);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	lightPass.setUniformmat4("mView", mView);
+	lightPass.setUniformmat4("projection", projection);
+	lightPass.setUniformv3f("worldPos", pl.position);
+	lightPass.setUniformf("radius", pl.radius);
+	lightPass.setUniformv3f("lightColor", pl.color);
+	lightPass.setUniformv2f("screenSize", glm::vec2(width, height));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.color);
+
+	lightPass.setUniformi("positionMap", 0);
+	lightPass.setUniformi("normalMap", 1);
+	lightPass.setUniformi("colorMap", 2);
+
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_ONE, GL_ONE);
+
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	sphere.render();
 }
 
 pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> Scene::read(std::istream& stream) {

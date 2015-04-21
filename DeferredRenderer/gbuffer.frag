@@ -2,7 +2,6 @@
 
 in vec3 fragPos;
 in vec3 fragNormal;
-in vec3 fragColor;
 
 uniform vec3 diffuse;
 uniform float specular;
