@@ -21,7 +21,8 @@ void main() {
 	vec3 color = texture(colorMap, coord).xyz;
 
 	float r = length(lPos - pos);
-	vec3 l = normalize(lPos - pos);
+	float attenuation = 1 - (1.0 / (1 + r + r*r));
+	vec3 l = (lPos - pos) / r;
 	vec3 v = -normalize(pos);
 	vec3 h = normalize(v + l);
 
@@ -31,6 +32,6 @@ void main() {
 	vec3 specular = vec3(0);
 	if (ndotl >= 0) specular = pow(max(0.0f, dot(n, h)), specularPower) * vec3(s);
 
-	fragColor = vec4(lightColor * (diffuse + specular), 1);
+	fragColor = vec4(lightColor * (diffuse + specular) * attenuation, 1);
 	//fragColor = vec4(1);
 }
