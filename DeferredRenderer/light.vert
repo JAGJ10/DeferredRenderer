@@ -7,7 +7,6 @@ uniform mat4 projection;
 
 uniform vec3 worldPos;
 uniform float radius;
-uniform vec3 lPos;
 
 void main() {
 	vec3 wPos = (position * radius) + worldPos;

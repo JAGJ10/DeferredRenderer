@@ -194,10 +194,11 @@ void Scene::blurPass() {
 
 void Scene::pointLightPass() {
 	PointLight pl;
-	pl.color = glm::vec3(1);
+	pl.color = glm::vec3(0.5f, 0.5f, 1);
 	pl.position = glm::vec3(0, 25, 0);
-	pl.radius = 100;
-
+	pl.attenuation = glm::vec3(1, 0.01f, 0.001f);
+	pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
+	
 	glUseProgram(lightPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -207,6 +208,7 @@ void Scene::pointLightPass() {
 	lightPass.setUniformf("radius", pl.radius);
 	lightPass.setUniformv3f("lPos", glm::vec3(mView * glm::vec4(pl.position, 1.0)));
 	lightPass.setUniformv3f("lightColor", pl.color);
+	lightPass.setUniformv3f("lightAttenuation", pl.attenuation);
 	lightPass.setUniformv2f("screenSize", glm::vec2(width, height));
 
 	glActiveTexture(GL_TEXTURE0);
