@@ -1,11 +1,10 @@
 #version 420 core
 
-in vec3 lPos;
-
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
 
+uniform vec3 lPos;
 uniform vec3 lightColor;
 uniform vec2 screenSize;
 
@@ -21,7 +20,7 @@ void main() {
 	vec3 color = texture(colorMap, coord).xyz;
 
 	float r = length(lPos - pos);
-	float attenuation = 1 - (1.0 / (1 + r + r*r));
+	float attenuation = 1.0 / (1 + 0.01*r + .0001*r*r);
 	vec3 l = (lPos - pos) / r;
 	vec3 v = -normalize(pos);
 	vec3 h = normalize(v + l);
@@ -33,5 +32,10 @@ void main() {
 	if (ndotl >= 0) specular = pow(max(0.0f, dot(n, h)), specularPower) * vec3(s);
 
 	fragColor = vec4(lightColor * (diffuse + specular) * attenuation, 1);
+	//fragColor = vec4(color, 1);
+	//fragColor = vec4(n, 1);
+	//fragColor = vec4(l, 1);
+	//fragColor = vec4(pos / 1000, 1);
+	//fragColor = vec4(lPos, 1);
 	//fragColor = vec4(1);
 }

@@ -101,7 +101,7 @@ void Scene::renderScene(Camera &cam) {
 	//Render geometry to gBuffer
 	geometryPass();
 
-	//gBuffer.unbindDraw();
+	gBuffer.unbindDraw();
 
 	//Render lights to light buffer
 	pointLightPass();
@@ -195,8 +195,9 @@ void Scene::blurPass() {
 void Scene::pointLightPass() {
 	PointLight pl;
 	pl.color = glm::vec3(1);
-	pl.position = glm::vec3(0, 10, 0);
+	pl.position = glm::vec3(0, 25, 0);
 	pl.radius = 100;
+
 	glUseProgram(lightPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -204,6 +205,7 @@ void Scene::pointLightPass() {
 	lightPass.setUniformmat4("projection", projection);
 	lightPass.setUniformv3f("worldPos", pl.position);
 	lightPass.setUniformf("radius", pl.radius);
+	lightPass.setUniformv3f("lPos", glm::vec3(mView * glm::vec4(pl.position, 1.0)));
 	lightPass.setUniformv3f("lightColor", pl.color);
 	lightPass.setUniformv2f("screenSize", glm::vec2(width, height));
 
