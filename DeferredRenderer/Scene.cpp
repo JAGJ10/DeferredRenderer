@@ -23,10 +23,10 @@ sphere(Mesh())
 {
 	aspectRatio = float(width) / float(height);
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
-	//projection = glm::perspective(cam.zoom, aspectRatio, 100.0f, 10000.0f);
-	dLightMView = glm::lookAt(glm::vec3(100.0f, 100.0f, 100.0f), glm::vec3(0), glm::vec3(0, 1, 0));
-	dLightProjection = glm::ortho(-100.f, 100.f, -10.f, 100.f, 10.f, 2000.0f);
-	//dLightProjection = glm::perspective(cam.zoom, aspectRatio, 0.1f, 1000.0f);
+	//projection = glm::perspective(cam.zoom, aspectRatio, 10.0f, 2000.0f);
+	dLightMView = glm::lookAt(glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(0), glm::vec3(0, 1, 0));
+	dLightProjection = glm::ortho(-450.0f, 450.0f, -450.0f, 450.0f, 0.1f, 2000.0f);
+	//dLightProjection = glm::perspective(cam.zoom, aspectRatio, 10.f, 2000.0f);
 	srand(int(time(NULL)));
 
 	for (int i = 0; i < 50; i++) {
@@ -183,7 +183,9 @@ void Scene::shadowPass() {
 	
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	fsQuad.render();
+	for (auto &i : meshes) {
+		i.render();
+	}
 	
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);

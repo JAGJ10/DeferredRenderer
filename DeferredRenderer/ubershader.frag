@@ -27,18 +27,16 @@ float linearizeDepth(float depth) {
 	return (2 * n) / (f + n - depth * (f - n));
 }
 
-float isShadow(vec3 position) {
+float getShadowFactor(vec3 position) {
 	vec4 p = inverseMView * vec4(position, 1.0);
 	p = shadowMapMVP * p;
 	p /= p.w;
-	p.x = p.x * 0.5 + 0.5;
-	p.y = p.y * 0.5 + 0.5;
+	p.xyz = p.xyz * 0.5 + 0.5;
 
 	float shadowDepth = texture(shadowMap, p.xy).x;
 
-	//shadowDepth = linearizeDepth(depth);
-
-	return shadowDepth;
+	if (shadowDepth < (p.z - 0.0001)) return 0.5;
+	else return 1.0;
 }
 
 void main() {
@@ -49,7 +47,7 @@ void main() {
 	vec3 light = texture(lightMap, coord).xyz;
 	float ssao = texture(ssaoMap, coord).x;
 	
-	float shadowFactor = isShadow(pos);
+	float shadowFactor = getShadowFactor(pos);
 
 	vec3 ambient = color * 0.1;
 
@@ -64,12 +62,7 @@ void main() {
 
 	vec3 finalColor = lightColor * (diffuse + specular);
 
-	//fragColor = vec4((ambient + finalColor + light) * ssao, 1);
-	//fragColor = vec4(color, 1);
+	fragColor = vec4((ambient + (finalColor * shadowFactor)) * ssao, 1);
 	//fragColor = vec4(light * ssao, 1);
-	//fragColor = vec4(n, 1);
-	//fragColor = vec4(pos, 1);
-	//fragColor = vec4(shadowFactor);
-	fragColor = vec4(linearizeDepth(texture(shadowMap, coord).x));
 	//fragColor = vec4(texture(shadowMap, coord).x);
 }

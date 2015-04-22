@@ -185,5 +185,8 @@
     <None Include="empty.frag">
       <Filter>shaders\stencil</Filter>
     </None>
+    <None Include="shadow.frag">
+      <Filter>shaders\shadow</Filter>
+    </None>
   </ItemGroup>
 </Project>

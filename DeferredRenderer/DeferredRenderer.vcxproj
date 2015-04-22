@@ -190,6 +190,7 @@
     <None Include="blur.vert" />
     <None Include="light.frag" />
     <None Include="light.vert" />
+    <None Include="shadow.frag" />
     <None Include="shadow.vert" />
     <None Include="empty.frag" />
     <None Include="ubershader.frag" />
