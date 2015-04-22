@@ -9,7 +9,7 @@ uniform sampler2D normalMap;
 uniform sampler2D colorMap;
 uniform sampler2D lightMap;
 uniform sampler2D ssaoMap;
-uniform sampler2D shadowMap;
+uniform sampler2DShadow shadowMap;
 
 uniform vec3 l;
 uniform mat4 shadowMapMVP;
@@ -33,10 +33,23 @@ float getShadowFactor(vec3 position) {
 	p /= p.w;
 	p.xyz = p.xyz * 0.5 + 0.5;
 
-	float shadowDepth = texture(shadowMap, p.xy).x;
+	float factor = 0;
 
-	if (shadowDepth < (p.z - 0.0001)) return 0.5;
-	else return 1.0;
+	vec2 offset = vec2(1.0 / float(shadowMapWidth), 1.0 / float(shadowMapHeight));
+
+	for (int y = -1 ; y <= 1 ; y++) {
+		for (int x = -1 ; x <= 1 ; x++) {
+			vec3 uvc = vec3(p.xy + (vec2(x,y) * offset), p.z - 0.005);
+			factor += texture(shadowMap, uvc);
+        }
+    }
+
+	return (0.5 + (factor / 18));
+
+	//float shadowDepth = texture(shadowMap, p.xy).x;
+
+	//if (shadowDepth < (p.z - 0.0001)) return 0.5;
+	//else return 1.0;
 }
 
 void main() {
