@@ -5,7 +5,7 @@
 
 class GBuffer {
 public:
-	GLuint position, normal, color, depth, effect1, effect2;
+	GLuint position, normal, color, depth, light, effect1, effect2;
 
 	GBuffer(int widthIn, int heightIn);
 	~GBuffer();
@@ -14,7 +14,9 @@ public:
 	int getWidth() const;
 	int getHeight() const;
 	void setDrawBuffers();
+	void setDrawLight();
 	void setDrawEffect();
+	void setDrawNone();
 	//void setReadBuffer();
 	void setReadEffect();
 	void bind();
@@ -26,7 +28,7 @@ public:
 	void setGeomTextures();
 
 private:
-	GLenum drawBuffers[4];
+	GLenum drawBuffers[3];
 
 	GLuint fbo;	
 

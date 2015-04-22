@@ -12,6 +12,7 @@ gBuffer(GBuffer(width, height)),
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
+stencil(Shader("light.vert", "stencil.frag")),
 lightPass(Shader("light.vert", "light.frag")),
 finalPass(Shader("ubershader.vert", "ubershader.frag")), 
 fsQuad(FullscreenQuad()),
@@ -20,6 +21,11 @@ sphere(Mesh())
 	aspectRatio = float(width) / float(height);
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
 	srand(int(time(NULL)));
+
+	pl.color = glm::vec3(0.5f, 0.5f, 1);
+	pl.position = glm::vec3(0, 25, 0);
+	pl.attenuation = glm::vec3(1, 0.01f, 0.001f);
+	pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
 }
 
 Scene::~Scene() {
@@ -101,37 +107,24 @@ void Scene::renderScene(Camera &cam) {
 	//Render geometry to gBuffer
 	geometryPass();
 
-	gBuffer.unbindDraw();
-
-	//Render lights to light buffer
+	//Compute stencil and then render lights
+	glEnable(GL_STENCIL_TEST);
+	stencilPass();
 	pointLightPass();
+	glDisable(GL_STENCIL_TEST);
 
 	//SSAO to gBuffer's effect1 texture
 	//ssaoPass();
 
 	//Blur over SSAO to filter out noise (TODO: use better blur)
 
-	//Composition pass (directional light + light buffer)
-	/*glUseProgram(finalPass.program);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//Render directional light and compute final color with light buffer
+	//compositePass();
 
-	finalPass.setUniformmat4("mView", mView);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.color);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
-
-	finalPass.setUniformi("positionMap", 0);
-	finalPass.setUniformi("normalMap", 1);
-	finalPass.setUniformi("colorMap", 2);
-	finalPass.setUniformi("ssaoMap", 3);
-
-	fsQuad.renderFromBuffers();*/
+	gBuffer.unbindDraw();
+	gBuffer.bindRead();
+	glReadBuffer(GL_COLOR_ATTACHMENT3);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	cout << glGetError() << endl;
 }
@@ -146,11 +139,9 @@ void Scene::geometryPass() {
 	firstPass.setUniformmat3("mNormal", normalMatrix);
 
 	glDepthMask(GL_TRUE);
-	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (auto &i : meshes) {
 		firstPass.setUniformv3f("diffuse", i.diffuse + i.ambient);
@@ -159,8 +150,9 @@ void Scene::geometryPass() {
 	}
 
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_STENCIL_TEST);
 	glDepthMask(GL_FALSE);
+
+	gBuffer.unbindDraw();
 }
 
 void Scene::ssaoPass() {
@@ -192,15 +184,32 @@ void Scene::blurPass() {
 
 }
 
+void Scene::stencilPass() {
+	glUseProgram(stencil.program);
+	gBuffer.bindDraw();
+	gBuffer.setDrawNone();
+
+	glEnable(GL_DEPTH_TEST);
+	glStencilFunc(GL_ALWAYS, 0, 0);
+	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+
+	stencil.setUniformmat4("mView", mView);
+	stencil.setUniformmat4("projection", projection);
+	stencil.setUniformv3f("worldPos", pl.position);
+	stencil.setUniformf("radius", pl.radius);
+
+	glClear(GL_STENCIL_BUFFER_BIT);
+
+	sphere.render();
+
+	glDisable(GL_DEPTH_TEST);
+}
+
 void Scene::pointLightPass() {
-	PointLight pl;
-	pl.color = glm::vec3(0.5f, 0.5f, 1);
-	pl.position = glm::vec3(0, 25, 0);
-	pl.attenuation = glm::vec3(1, 0.01f, 0.001f);
-	pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
-	
 	glUseProgram(lightPass.program);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	gBuffer.bindDraw();
+	gBuffer.setDrawLight();
 
 	lightPass.setUniformmat4("mView", mView);
 	lightPass.setUniformmat4("projection", projection);
@@ -222,13 +231,44 @@ void Scene::pointLightPass() {
 	lightPass.setUniformi("normalMap", 1);
 	lightPass.setUniformi("colorMap", 2);
 
+	glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	sphere.render();
+
+	//glCullFace(GL_FRONT);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+}
+
+void Scene::compositePass() {
+	//Composition pass (directional light + light buffer)
+	glUseProgram(finalPass.program);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	finalPass.setUniformmat4("mView", mView);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.color);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
+
+	finalPass.setUniformi("positionMap", 0);
+	finalPass.setUniformi("normalMap", 1);
+	finalPass.setUniformi("colorMap", 2);
+	finalPass.setUniformi("ssaoMap", 3);
+
+	fsQuad.renderFromBuffers();
 }
 
 pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> Scene::read(std::istream& stream) {

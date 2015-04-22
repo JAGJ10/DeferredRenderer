@@ -190,6 +190,7 @@
     <None Include="blur.vert" />
     <None Include="light.frag" />
     <None Include="light.vert" />
+    <None Include="stencil.frag" />
     <None Include="ubershader.frag" />
     <None Include="ubershader.vert" />
     <None Include="gbuffer.frag" />

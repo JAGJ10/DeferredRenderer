@@ -50,6 +50,9 @@
     <Filter Include="shaders\lighting">
       <UniqueIdentifier>{b4cc671f-4630-4d6f-b1cd-55d6aa055e63}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders\stencil">
+      <UniqueIdentifier>{272437f8-8008-4cdd-adaa-6acd236f30d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Mesh.cpp">
@@ -172,6 +175,9 @@
     </None>
     <None Include="light.frag">
       <Filter>shaders\lighting</Filter>
+    </None>
+    <None Include="stencil.frag">
+      <Filter>shaders\stencil</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -9,8 +9,10 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 	glGenTextures(1, &position);
 	glGenTextures(1, &normal);
 	glGenTextures(1, &color);
+	glGenTextures(1, &light);
 	glGenTextures(1, &depth);
 	glGenTextures(1, &effect1);
+	glGenTextures(1, &effect2);
 
 	//Position
 	glBindTexture(GL_TEXTURE_2D, position);
@@ -36,8 +38,24 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	//Create post process effect buffer
+	//Light buffer
+	glBindTexture(GL_TEXTURE_2D, light);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	//Create first post process effect buffer
 	glBindTexture(GL_TEXTURE_2D, effect1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	//Create second post process effect buffer
+	glBindTexture(GL_TEXTURE_2D, effect2);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -46,7 +64,7 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 
 	//Create depth texture
 	glBindTexture(GL_TEXTURE_2D, depth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -57,10 +75,12 @@ GBuffer::GBuffer(int width, int height) : width(width), height(height) {
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, position, 0);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normal, 0);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, color, 0);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, effect1, 0);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, light, 0);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, effect1, 0);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, effect2, 0);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
 	
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 3; i++) {
 		drawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 	}
 
@@ -74,8 +94,10 @@ GBuffer::~GBuffer() {
 		glDeleteTextures(1, &position);
 		glDeleteTextures(1, &normal);
 		glDeleteTextures(1, &color);
+		glDeleteTextures(1, &light);
 		glDeleteTextures(1, &depth);
 		glDeleteTextures(1, &effect1);
+		glDeleteTextures(1, &effect2);
 	}
 }
 
@@ -95,12 +117,20 @@ void GBuffer::setDrawBuffers() {
 	glDrawBuffers(3, drawBuffers);
 }
 
-void GBuffer::setDrawEffect() {
+void GBuffer::setDrawLight() {
 	glDrawBuffer(GL_COLOR_ATTACHMENT3);
 }
 
+void GBuffer::setDrawEffect() {
+	glDrawBuffer(GL_COLOR_ATTACHMENT4);
+}
+
+void GBuffer::setDrawNone() {
+	glDrawBuffer(GL_NONE);
+}
+
 void GBuffer::setReadEffect() {
-	glReadBuffer(GL_COLOR_ATTACHMENT3);
+	glReadBuffer(GL_COLOR_ATTACHMENT4);
 }
 
 void GBuffer::bind() {
