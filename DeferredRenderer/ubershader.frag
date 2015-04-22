@@ -15,7 +15,7 @@ uniform vec3 l;
 out vec4 fragColor;
 
 const float specularPower = 16.0f;
-const vec3 lightColor = vec3(1);
+const vec3 lightColor = vec3(0.5);
 
 void main() {
     vec3 n = normalize(texture(normalMap, coord).xyz);
@@ -38,9 +38,9 @@ void main() {
 
 	vec3 finalColor = lightColor * (diffuse + specular);
 
-	fragColor = vec4((ambient + finalColor) * ssao, 1);
+	//fragColor = vec4((ambient + finalColor + light) * ssao, 1);
 	//fragColor = vec4(color, 1);
-	//fragColor = vec4(light, 1);
+	fragColor = vec4(light * ssao, 1);
 	//fragColor = vec4(n, 1);
 	//fragColor = vec4(pos, 1);
 }

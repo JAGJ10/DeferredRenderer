@@ -23,10 +23,17 @@ sphere(Mesh())
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
 	srand(int(time(NULL)));
 
-	pl.color = glm::vec3(0.5f, 0.5f, 1);
-	pl.position = glm::vec3(0, 50, 0);
-	pl.attenuation = glm::vec3(1, 0.01f, 0.0001f);
-	pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
+	for (int i = 0; i < 50; i++) {
+		float r1 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float r2 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float r3 = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		PointLight pl;
+		pl.color = glm::vec3(r1, r2, r3);
+		pl.position = glm::vec3(500 * (r1 * 2 - 1), 50 * r2, 500 * (r3 * 2 - 1));
+		pl.attenuation = glm::vec3(1, 0.01f, 0.0001f);
+		pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
+		lights.push_back(pl);
+	}
 }
 
 Scene::~Scene() {
@@ -108,10 +115,16 @@ void Scene::renderScene(Camera &cam) {
 	//Render geometry to gBuffer
 	geometryPass();
 
+	//Need to clear light buffer
+	gBuffer.setDrawLight();
+	glClear(GL_COLOR_BUFFER_BIT);
+
 	//Compute stencil and then render lights
 	glEnable(GL_STENCIL_TEST);
-	stencilPass();
-	pointLightPass();
+	for (auto &pl : lights) {
+		stencilPass(pl);
+		pointLightPass(pl);
+	}
 	glDisable(GL_STENCIL_TEST);
 
 	//SSAO to gBuffer's effect1 texture
@@ -178,7 +191,7 @@ void Scene::blurPass() {
 
 }
 
-void Scene::stencilPass() {
+void Scene::stencilPass(PointLight pl) {
 	glUseProgram(stencil.program);
 	gBuffer.setDrawNone();
 
@@ -199,7 +212,7 @@ void Scene::stencilPass() {
 	glDisable(GL_DEPTH_TEST);
 }
 
-void Scene::pointLightPass() {
+void Scene::pointLightPass(PointLight pl) {
 	glUseProgram(lightPass.program);
 	gBuffer.setDrawLight();
 
@@ -228,8 +241,6 @@ void Scene::pointLightPass() {
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
 	glEnable(GL_CULL_FACE);
-
-	glClear(GL_COLOR_BUFFER_BIT);
 
 	sphere.render();
 

@@ -33,8 +33,6 @@ private:
 	GLuint noiseTex;
 	glm::vec2 noiseScale;
 
-	PointLight pl;
-
 	Shader firstPass;
 	Shader ssao;
 	Shader blur;
@@ -46,6 +44,7 @@ private:
 	//Octree octree;
 	//std::vector<SceneObject*> visibleObjects;
 	Mesh sphere;
+	std::vector<PointLight> lights;
 	std::vector<Mesh> meshes;
 	std::vector<float> kernel;
 
@@ -53,8 +52,8 @@ private:
 	void geometryPass();
 	void ssaoPass();
 	void blurPass();
-	void stencilPass();
-	void pointLightPass();
+	void stencilPass(PointLight pl);
+	void pointLightPass(PointLight pl);
 	void compositePass();
 	std::pair<std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>> read(std::istream& stream);
 };
