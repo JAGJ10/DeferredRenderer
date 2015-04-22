@@ -54,7 +54,7 @@
       <UniqueIdentifier>{272437f8-8008-4cdd-adaa-6acd236f30d3}</UniqueIdentifier>
     </Filter>
     <Filter Include="shaders\shadow">
-      <UniqueIdentifier>{cb170fce-99d4-4feb-8157-6e20d8c74fed}</UniqueIdentifier>
+      <UniqueIdentifier>{94a7df28-72da-4238-b7d2-84f5f41cecda}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -179,13 +179,10 @@
     <None Include="light.frag">
       <Filter>shaders\lighting</Filter>
     </None>
-    <None Include="shadow.vert">
-      <Filter>shaders\shadow</Filter>
-    </None>
     <None Include="empty.frag">
       <Filter>shaders\stencil</Filter>
     </None>
-    <None Include="shadow.frag">
+    <None Include="shadow.vert">
       <Filter>shaders\shadow</Filter>
     </None>
   </ItemGroup>
