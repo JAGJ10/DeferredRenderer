@@ -10,11 +10,12 @@ static const glm::vec4 lightDir = glm::vec4(1, 1, 1, 0);
 Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
 gBuffer(GBuffer(width, height)),
-dLightShadow(ShadowMap(2048, 2048)),
+dLightShadow(ShadowMap(1280, 720)),
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
+shadow(Shader("shadow.vert", "empty.frag")),
+stencil(Shader("light.vert", "empty.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
-stencil(Shader("light.vert", "stencil.frag")),
 lightPass(Shader("light.vert", "light.frag")),
 finalPass(Shader("ubershader.vert", "ubershader.frag")), 
 fsQuad(FullscreenQuad()),
@@ -22,8 +23,10 @@ sphere(Mesh())
 {
 	aspectRatio = float(width) / float(height);
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
-	dLightMView = glm::lookAt(-glm::vec3(lightDir), glm::vec3(0), glm::vec3(0, 1, 0));
-	dLightProjection = glm::ortho(-500, 500, -10, 200);
+	//projection = glm::perspective(cam.zoom, aspectRatio, 100.0f, 10000.0f);
+	dLightMView = glm::lookAt(glm::vec3(100.0f, 100.0f, 100.0f), glm::vec3(0), glm::vec3(0, 1, 0));
+	dLightProjection = glm::ortho(-100.f, 100.f, -10.f, 100.f, 10.f, 2000.0f);
+	//dLightProjection = glm::perspective(cam.zoom, aspectRatio, 0.1f, 1000.0f);
 	srand(int(time(NULL)));
 
 	for (int i = 0; i < 50; i++) {
@@ -118,10 +121,14 @@ void Scene::renderScene(Camera &cam) {
 	//Render geometry to gBuffer
 	geometryPass();
 
+	//Render shadowmap
+	shadowPass();
+
 	//Need to clear light buffer
+	gBuffer.bindDraw();
 	gBuffer.setDrawLight();
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	
 	//Compute stencil and then render lights
 	glEnable(GL_STENCIL_TEST);
 	for (auto &pl : lights) {
@@ -129,7 +136,7 @@ void Scene::renderScene(Camera &cam) {
 		pointLightPass(pl);
 	}
 	glDisable(GL_STENCIL_TEST);
-
+	
 	//SSAO to gBuffer's effect1 texture
 	ssaoPass();
 
@@ -165,33 +172,23 @@ void Scene::geometryPass() {
 	glDepthMask(GL_FALSE);
 }
 
-void Scene::ssaoPass() {
-	glUseProgram(ssao.program);
-	gBuffer.setDrawEffect();
+void Scene::shadowPass() {
+	glUseProgram(shadow.program);
+	dLightShadow.bindDraw();
+	
+	shadow.setUniformmat4("mvp", dLightProjection * dLightMView);
 
-	ssao.setUniformmat4("projection", projection);
-	ssao.setUniformi("kernelSize", kernelSize);
-	ssao.setUniformv2f("noiseScale", noiseScale);
-	ssao.setUniform3fv("kernel", kernelSize, &kernel[0]);
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	
+	glClear(GL_DEPTH_BUFFER_BIT);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, noiseTex);
+	fsQuad.render();
+	
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
 
-	ssao.setUniformi("positionMap", 0);
-	ssao.setUniformi("normalMap", 1);
-	ssao.setUniformi("noiseMap", 2);
-
-	fsQuad.renderFromBuffers();
-
-	gBuffer.unbindDraw();
-}
-
-void Scene::blurPass() {
-
+	dLightShadow.unbindDraw();
 }
 
 void Scene::stencilPass(PointLight pl) {
@@ -251,12 +248,41 @@ void Scene::pointLightPass(PointLight pl) {
 	glDisable(GL_BLEND);
 }
 
+void Scene::ssaoPass() {
+	glUseProgram(ssao.program);
+	gBuffer.setDrawEffect();
+
+	ssao.setUniformmat4("projection", projection);
+	ssao.setUniformi("kernelSize", kernelSize);
+	ssao.setUniformv2f("noiseScale", noiseScale);
+	ssao.setUniform3fv("kernel", kernelSize, &kernel[0]);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, noiseTex);
+
+	ssao.setUniformi("positionMap", 0);
+	ssao.setUniformi("normalMap", 1);
+	ssao.setUniformi("noiseMap", 2);
+
+	fsQuad.render();
+
+	gBuffer.unbindDraw();
+}
+
+void Scene::blurPass() {
+
+}
+
 void Scene::compositePass() {
 	//Composition pass (directional light + light buffer)
 	glUseProgram(finalPass.program);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	finalPass.setUniformmat4("mView", mView);
+	finalPass.setUniformmat4("inverseMView", glm::inverse(mView));
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
@@ -268,54 +294,22 @@ void Scene::compositePass() {
 	glBindTexture(GL_TEXTURE_2D, gBuffer.light);
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, dLightShadow.depth);
 
 	finalPass.setUniformi("positionMap", 0);
 	finalPass.setUniformi("normalMap", 1);
 	finalPass.setUniformi("colorMap", 2);
 	finalPass.setUniformi("lightMap", 3);
 	finalPass.setUniformi("ssaoMap", 4);
+	finalPass.setUniformi("shadowMap", 5);
 
 	finalPass.setUniformv3f("l", glm::vec3(mView * lightDir));
+	finalPass.setUniformmat4("shadowMapMVP", dLightProjection * dLightMView);
+	finalPass.setUniformi("shadowMapWidth", 1280);
+	finalPass.setUniformi("shadowMapHeight", 720);
 
-	fsQuad.renderFromBuffers();
-}
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> Scene::read(std::istream& stream) {
-	assert(sizeof(float) == sizeof(int));
-	const auto sz = sizeof(int);
-
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-
-	int nMeshes = 0;
-	int nMatProperties = 0;
-	stream.read((char*)&nMeshes, sz);
-	stream.read((char*)&nMatProperties, sz);
-	shapes.resize(nMeshes);
-	materials.resize(nMeshes);
-
-	for (size_t i = 0; i < nMeshes; ++i) {
-		int nVertices = 0, nNormals = 0, nTexcoords = 0, nIndices = 0;
-		stream.read((char*)&nVertices, sz);
-		stream.read((char*)&nNormals, sz);
-		stream.read((char*)&nTexcoords, sz);
-		stream.read((char*)&nIndices, sz);
-
-		shapes[i].mesh.positions.resize(nVertices);
-		shapes[i].mesh.normals.resize(nNormals);
-		shapes[i].mesh.texcoords.resize(nTexcoords);
-		shapes[i].mesh.indices.resize(nIndices);
-		
-		stream.read((char*)&shapes[i].mesh.positions[0], nVertices * sz);
-		stream.read((char*)&shapes[i].mesh.normals[0], nNormals * sz);
-		stream.read((char*)&shapes[i].mesh.texcoords[0], nTexcoords * sz);
-		stream.read((char*)&shapes[i].mesh.indices[0], nIndices * sz);
-		stream.read((char*)&materials[i].ambient[0], 3 * sz);
-		stream.read((char*)&materials[i].diffuse[0], 3 * sz);
-		stream.read((char*)&materials[i].specular[0], 3 * sz);
-	}
-
-	pair<vector<tinyobj::shape_t>, vector<tinyobj::material_t>> ret(shapes, materials);
-
-	return ret;
+	fsQuad.render();
 }

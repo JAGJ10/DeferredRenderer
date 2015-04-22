@@ -179,11 +179,11 @@
     <None Include="light.frag">
       <Filter>shaders\lighting</Filter>
     </None>
-    <None Include="stencil.frag">
-      <Filter>shaders\stencil</Filter>
-    </None>
     <None Include="shadow.vert">
       <Filter>shaders\shadow</Filter>
+    </None>
+    <None Include="empty.frag">
+      <Filter>shaders\stencil</Filter>
     </None>
   </ItemGroup>
 </Project>

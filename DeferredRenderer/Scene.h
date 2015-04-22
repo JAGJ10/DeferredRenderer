@@ -37,10 +37,11 @@ private:
 	GBuffer gBuffer;
 	ShadowMap dLightShadow;
 	Shader firstPass;
-	Shader ssao;
-	Shader blur;
+	Shader shadow;
 	Shader stencil;
 	Shader lightPass;
+	Shader ssao;
+	Shader blur;
 	Shader finalPass;
 	FullscreenQuad fsQuad;
 	//Octree octree;
@@ -52,12 +53,12 @@ private:
 
 	void initKernel();
 	void geometryPass();
-	void ssaoPass();
-	void blurPass();
+	void shadowPass();
 	void stencilPass(PointLight pl);
 	void pointLightPass(PointLight pl);
+	void ssaoPass();
+	void blurPass();
 	void compositePass();
-	std::pair<std::vector<tinyobj::shape_t>, std::vector<tinyobj::material_t>> read(std::istream& stream);
 };
 
 #endif

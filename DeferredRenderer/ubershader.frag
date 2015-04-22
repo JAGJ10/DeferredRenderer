@@ -2,20 +2,44 @@
 
 in vec2 coord;
 
-uniform mat4 mView;
+uniform mat4 inverseMView;
 
 uniform sampler2D positionMap;
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
 uniform sampler2D lightMap;
 uniform sampler2D ssaoMap;
+uniform sampler2D shadowMap;
 
 uniform vec3 l;
+uniform mat4 shadowMapMVP;
+uniform int shadowMapWidth;
+uniform int shadowMapHeight;
 
 out vec4 fragColor;
 
 const float specularPower = 16.0f;
 const vec3 lightColor = vec3(0.5);
+
+float linearizeDepth(float depth) {
+	float f = 2000.0;
+	float n = 10.0;
+	return (2 * n) / (f + n - depth * (f - n));
+}
+
+float isShadow(vec3 position) {
+	vec4 p = inverseMView * vec4(position, 1.0);
+	p = shadowMapMVP * p;
+	p /= p.w;
+	p.x = p.x * 0.5 + 0.5;
+	p.y = p.y * 0.5 + 0.5;
+
+	float shadowDepth = texture(shadowMap, p.xy).x;
+
+	//shadowDepth = linearizeDepth(depth);
+
+	return shadowDepth;
+}
 
 void main() {
     vec3 n = normalize(texture(normalMap, coord).xyz);
@@ -24,6 +48,8 @@ void main() {
 	vec3 color = texture(colorMap, coord).xyz;
 	vec3 light = texture(lightMap, coord).xyz;
 	float ssao = texture(ssaoMap, coord).x;
+	
+	float shadowFactor = isShadow(pos);
 
 	vec3 ambient = color * 0.1;
 
@@ -40,7 +66,10 @@ void main() {
 
 	//fragColor = vec4((ambient + finalColor + light) * ssao, 1);
 	//fragColor = vec4(color, 1);
-	fragColor = vec4(light * ssao, 1);
+	//fragColor = vec4(light * ssao, 1);
 	//fragColor = vec4(n, 1);
 	//fragColor = vec4(pos, 1);
+	//fragColor = vec4(shadowFactor);
+	fragColor = vec4(linearizeDepth(texture(shadowMap, coord).x));
+	//fragColor = vec4(texture(shadowMap, coord).x);
 }

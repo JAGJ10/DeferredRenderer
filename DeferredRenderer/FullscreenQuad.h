@@ -12,7 +12,7 @@ public:
 
 	void clear();
 	void updateBuffers(std::vector<float>& positions, std::vector<GLuint>& indices);
-	void renderFromBuffers();
+	void render();
 
 private:
 	GLuint vao;

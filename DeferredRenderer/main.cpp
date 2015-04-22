@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
-std::vector<tinyobj::shape_t> read(std::istream& stream);
 void write(std::ostream& stream, const std::vector<tinyobj::shape_t>& shapes, const std::vector<tinyobj::material_t>& materials);
 
 static const int width = 1280;
