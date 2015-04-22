@@ -53,6 +53,9 @@
     <Filter Include="shaders\stencil">
       <UniqueIdentifier>{272437f8-8008-4cdd-adaa-6acd236f30d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders\shadow">
+      <UniqueIdentifier>{cb170fce-99d4-4feb-8157-6e20d8c74fed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Mesh.cpp">
@@ -92,6 +95,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.h">
+      <Filter>src\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
       <Filter>src\Lighting</Filter>
     </ClCompile>
   </ItemGroup>
@@ -138,6 +144,9 @@
     <ClInclude Include="MeshHelper.h">
       <Filter>src\Lighting</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowMap.h">
+      <Filter>src\Lighting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gbuffer.frag">
@@ -172,6 +181,9 @@
     </None>
     <None Include="stencil.frag">
       <Filter>shaders\stencil</Filter>
+    </None>
+    <None Include="shadow.vert">
+      <Filter>shaders\shadow</Filter>
     </None>
   </ItemGroup>
 </Project>

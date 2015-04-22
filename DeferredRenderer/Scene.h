@@ -12,6 +12,7 @@
 #include "Shader.h"
 #include "PointLight.h"
 #include "MeshHelper.h"
+#include "ShadowMap.h"
 #include "tiny_obj_loader.h"
 #include <time.h>
 
@@ -27,12 +28,14 @@ private:
 	int width, height;
 	float aspectRatio;
 
-	glm::mat4 mView, projection;
+	glm::mat4 mView, projection, dLightMView, dLightProjection;
 	glm::mat3 normalMatrix;
 
 	GLuint noiseTex;
 	glm::vec2 noiseScale;
 
+	GBuffer gBuffer;
+	ShadowMap dLightShadow;
 	Shader firstPass;
 	Shader ssao;
 	Shader blur;
@@ -40,7 +43,6 @@ private:
 	Shader lightPass;
 	Shader finalPass;
 	FullscreenQuad fsQuad;
-	GBuffer gBuffer;
 	//Octree octree;
 	//std::vector<SceneObject*> visibleObjects;
 	Mesh sphere;

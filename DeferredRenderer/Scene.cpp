@@ -9,7 +9,8 @@ static const glm::vec4 lightDir = glm::vec4(1, 1, 1, 0);
 
 Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
-gBuffer(GBuffer(width, height)), 
+gBuffer(GBuffer(width, height)),
+dLightShadow(ShadowMap(2048, 2048)),
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
@@ -21,6 +22,8 @@ sphere(Mesh())
 {
 	aspectRatio = float(width) / float(height);
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
+	dLightMView = glm::lookAt(-glm::vec3(lightDir), glm::vec3(0), glm::vec3(0, 1, 0));
+	dLightProjection = glm::ortho(-500, 500, -10, 200);
 	srand(int(time(NULL)));
 
 	for (int i = 0; i < 50; i++) {

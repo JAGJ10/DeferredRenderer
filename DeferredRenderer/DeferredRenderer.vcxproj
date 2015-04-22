@@ -162,6 +162,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="tiny_obj_loader.cc" />
     <ClCompile Include="VBO.cpp" />
   </ItemGroup>
@@ -180,6 +181,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="tiny_obj_loader.h" />
     <ClInclude Include="VBO.h" />
   </ItemGroup>
@@ -188,6 +190,7 @@
     <None Include="blur.vert" />
     <None Include="light.frag" />
     <None Include="light.vert" />
+    <None Include="shadow.vert" />
     <None Include="stencil.frag" />
     <None Include="ubershader.frag" />
     <None Include="ubershader.vert" />
