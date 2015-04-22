@@ -73,9 +73,6 @@
     <ClCompile Include="Shader.cpp">
       <Filter>src\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>src\Shader</Filter>
-    </ClCompile>
     <ClCompile Include="VBO.cpp">
       <Filter>src\Shader</Filter>
     </ClCompile>
@@ -112,9 +109,6 @@
       <Filter>src\Shader</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>src\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
       <Filter>src\Shader</Filter>
     </ClInclude>
     <ClInclude Include="VBO.h">

@@ -5,6 +5,7 @@ using namespace std;
 static const int kernelSize = 64;
 static const int noiseSize = 4;
 static const int blurSize = 2;
+static const glm::vec4 lightDir = glm::vec4(1, 1, 1, 0);
 
 Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
@@ -114,17 +115,12 @@ void Scene::renderScene(Camera &cam) {
 	glDisable(GL_STENCIL_TEST);
 
 	//SSAO to gBuffer's effect1 texture
-	//ssaoPass();
+	ssaoPass();
 
 	//Blur over SSAO to filter out noise (TODO: use better blur)
 
 	//Render directional light and compute final color with light buffer
-	//compositePass();
-
-	gBuffer.unbindDraw();
-	gBuffer.bindRead();
-	glReadBuffer(GL_COLOR_ATTACHMENT3);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	compositePass();
 
 	cout << glGetError() << endl;
 }
@@ -144,7 +140,7 @@ void Scene::geometryPass() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (auto &i : meshes) {
-		firstPass.setUniformv3f("diffuse", i.diffuse + i.ambient);
+		firstPass.setUniformv3f("diffuse", i.diffuse);
 		firstPass.setUniformf("specular", i.specular);
 		i.render();
 	}
@@ -207,15 +203,6 @@ void Scene::pointLightPass() {
 	glUseProgram(lightPass.program);
 	gBuffer.setDrawLight();
 
-	lightPass.setUniformmat4("mView", mView);
-	lightPass.setUniformmat4("projection", projection);
-	lightPass.setUniformv3f("worldPos", pl.position);
-	lightPass.setUniformf("radius", pl.radius);
-	lightPass.setUniformv3f("lPos", glm::vec3(mView * glm::vec4(pl.position, 1.0)));
-	lightPass.setUniformv3f("lightColor", pl.color);
-	lightPass.setUniformv3f("lightAttenuation", pl.attenuation);
-	lightPass.setUniformv2f("screenSize", glm::vec2(width, height));
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
 	glActiveTexture(GL_TEXTURE1);
@@ -226,6 +213,15 @@ void Scene::pointLightPass() {
 	lightPass.setUniformi("positionMap", 0);
 	lightPass.setUniformi("normalMap", 1);
 	lightPass.setUniformi("colorMap", 2);
+
+	lightPass.setUniformmat4("mView", mView);
+	lightPass.setUniformmat4("projection", projection);
+	lightPass.setUniformv3f("worldPos", pl.position);
+	lightPass.setUniformf("radius", pl.radius);
+	lightPass.setUniformv3f("lPos", glm::vec3(mView * glm::vec4(pl.position, 1.0)));
+	lightPass.setUniformv3f("lightColor", pl.color);
+	lightPass.setUniformv3f("lightAttenuation", pl.attenuation);
+	lightPass.setUniformv2f("screenSize", glm::vec2(width, height));
 
 	glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
 	glEnable(GL_BLEND);
@@ -255,12 +251,17 @@ void Scene::compositePass() {
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gBuffer.color);
 	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.light);
+	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, gBuffer.effect1);
 
 	finalPass.setUniformi("positionMap", 0);
 	finalPass.setUniformi("normalMap", 1);
 	finalPass.setUniformi("colorMap", 2);
-	finalPass.setUniformi("ssaoMap", 3);
+	finalPass.setUniformi("lightMap", 3);
+	finalPass.setUniformi("ssaoMap", 4);
+
+	finalPass.setUniformv3f("l", glm::vec3(mView * lightDir));
 
 	fsQuad.renderFromBuffers();
 }
