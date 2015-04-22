@@ -151,8 +151,6 @@ void Scene::geometryPass() {
 
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
-
-	gBuffer.unbindDraw();
 }
 
 void Scene::ssaoPass() {
@@ -186,18 +184,17 @@ void Scene::blurPass() {
 
 void Scene::stencilPass() {
 	glUseProgram(stencil.program);
-	gBuffer.bindDraw();
 	gBuffer.setDrawNone();
-
-	glEnable(GL_DEPTH_TEST);
-	glStencilFunc(GL_ALWAYS, 0, 0);
-	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 	stencil.setUniformmat4("mView", mView);
 	stencil.setUniformmat4("projection", projection);
 	stencil.setUniformv3f("worldPos", pl.position);
 	stencil.setUniformf("radius", pl.radius);
+
+	glEnable(GL_DEPTH_TEST);
+	glStencilFunc(GL_ALWAYS, 0, 0);
+	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 	glClear(GL_STENCIL_BUFFER_BIT);
 
@@ -208,7 +205,6 @@ void Scene::stencilPass() {
 
 void Scene::pointLightPass() {
 	glUseProgram(lightPass.program);
-	gBuffer.bindDraw();
 	gBuffer.setDrawLight();
 
 	lightPass.setUniformmat4("mView", mView);
