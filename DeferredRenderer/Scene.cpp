@@ -23,8 +23,8 @@ sphere(Mesh())
 	srand(int(time(NULL)));
 
 	pl.color = glm::vec3(0.5f, 0.5f, 1);
-	pl.position = glm::vec3(0, 25, 0);
-	pl.attenuation = glm::vec3(1, 0.01f, 0.001f);
+	pl.position = glm::vec3(0, 50, 0);
+	pl.attenuation = glm::vec3(1, 0.01f, 0.0001f);
 	pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
 }
 
@@ -236,13 +236,11 @@ void Scene::pointLightPass() {
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	sphere.render();
 
-	//glCullFace(GL_FRONT);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 }
