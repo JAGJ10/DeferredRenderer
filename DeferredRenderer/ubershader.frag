@@ -77,5 +77,5 @@ void main() {
 
 	fragColor = vec4((ambient + (finalColor * shadowFactor)) * ssao, 1);
 	//fragColor = vec4(light * ssao, 1);
-	//fragColor = vec4(texture(shadowMap, coord).x);
+	//fragColor = vec4(texture(shadowMap, vec3(coord, 1.0)).x);
 }

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-static const int kernelSize = 64;
+static const int kernelSize = 256;
 static const int noiseSize = 4;
 static const int blurSize = 2;
 static const glm::vec4 lightDir = glm::vec4(1, 1, 1, 0);
@@ -10,7 +10,7 @@ static const glm::vec4 lightDir = glm::vec4(1, 1, 1, 0);
 Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
 gBuffer(GBuffer(width, height)),
-dLightShadow(ShadowMap(1280, 720)),
+dLightShadow(ShadowMap(2048, 2048)),
 firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
 shadow(Shader("shadow.vert", "empty.frag")),
 stencil(Shader("light.vert", "empty.frag")),
@@ -120,7 +120,9 @@ void Scene::renderScene(Camera &cam) {
 	geometryPass();
 
 	//Render shadowmap
+	glViewport(0, 0, 2048, 2048);
 	shadowPass();
+	glViewport(0, 0, width, height);
 
 	//Need to clear light buffer
 	gBuffer.bindDraw();
@@ -306,8 +308,8 @@ void Scene::compositePass() {
 
 	finalPass.setUniformv3f("l", glm::vec3(mView * lightDir));
 	finalPass.setUniformmat4("shadowMapMVP", dLightProjection * dLightMView);
-	finalPass.setUniformi("shadowMapWidth", 1280);
-	finalPass.setUniformi("shadowMapHeight", 720);
+	finalPass.setUniformi("shadowMapWidth", 2048);
+	finalPass.setUniformi("shadowMapHeight", 2048);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
