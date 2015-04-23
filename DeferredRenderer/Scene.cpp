@@ -23,7 +23,7 @@ sphere(Mesh())
 {
 	aspectRatio = float(width) / float(height);
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
-	dLightMView = glm::lookAt(glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(0), glm::vec3(0, 1, 0));
+	dLightMView = glm::lookAt(glm::vec3(500.0f, 500.0f, 500.0f), glm::vec3(0), glm::vec3(0, 1, 0));
 	dLightProjection = glm::ortho(-450.0f, 450.0f, -450.0f, 450.0f, 0.1f, 2000.0f);
 	srand(int(time(NULL)));
 
@@ -42,7 +42,7 @@ sphere(Mesh())
 
 Scene::~Scene() {
 	if (noiseTex != 0) {
-		glDeleteBuffers(1, &noiseTex);
+		glDeleteTextures(1, &noiseTex);
 	}
 }
 
@@ -311,7 +311,7 @@ void Scene::compositePass() {
 	finalPass.setUniformi("shadowMapWidth", 2048);
 	finalPass.setUniformi("shadowMapHeight", 2048);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	fsQuad.render();
 }
