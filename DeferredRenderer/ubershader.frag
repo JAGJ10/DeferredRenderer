@@ -75,7 +75,8 @@ void main() {
 
 	vec3 finalColor = lightColor * (diffuse + specular);
 
-	fragColor = vec4((ambient + (finalColor * shadowFactor)) * ssao, 1);
-	//fragColor = vec4(light * ssao, 1);
+	//fragColor = vec4((ambient + (finalColor * shadowFactor)) * ssao, 1);
+	//fragColor = vec4((ambient + light + (finalColor * shadowFactor)) * ssao, 1);
+	fragColor = vec4(light * ssao, 1);
 	//fragColor = vec4(texture(shadowMap, vec3(coord, 1.0)).x);
 }

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-static const int kernelSize = 256;
+static const int kernelSize = 64;
 static const int noiseSize = 4;
 static const int blurSize = 2;
 static const glm::vec4 lightDir = glm::vec4(1, 1, 1, 0);
@@ -145,7 +145,8 @@ void Scene::renderScene(Camera &cam) {
 	//Render directional light and compute final color with light buffer
 	compositePass();
 
-	cout << glGetError() << endl;
+	GLenum err = glGetError();
+	if (err != 0) cout << err << endl;
 }
 
 void Scene::geometryPass() {
