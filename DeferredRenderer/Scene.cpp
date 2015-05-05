@@ -11,7 +11,7 @@ Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
 gBuffer(GBuffer(width, height)),
 dLightShadow(ShadowMap(2048, 2048)),
-firstPass(Shader("gbuffer.vert", "gbuffer.frag")),
+geometry(Shader("gbuffer.vert", "gbuffer.frag")),
 shadow(Shader("shadow.vert", "empty.frag")),
 stencil(Shader("light.vert", "empty.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
@@ -21,6 +21,7 @@ finalPass(Shader("ubershader.vert", "ubershader.frag")),
 fsQuad(FullscreenQuad()),
 sphere(Mesh())
 {
+	type = 0;
 	aspectRatio = float(width) / float(height);
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
 	dLightMView = glm::lookAt(glm::vec3(500.0f, 500.0f, 500.0f), glm::vec3(0), glm::vec3(0, 1, 0));
@@ -44,6 +45,10 @@ Scene::~Scene() {
 	if (noiseTex != 0) {
 		glDeleteTextures(1, &noiseTex);
 	}
+}
+
+void Scene::setType(int type) {
+	this->type = type;
 }
 
 void Scene::loadMeshes() {
@@ -150,13 +155,13 @@ void Scene::renderScene(Camera &cam) {
 }
 
 void Scene::geometryPass() {
-	glUseProgram(firstPass.program);
+	glUseProgram(geometry.program);
 	gBuffer.bindDraw();
 	gBuffer.setDrawBuffers();
 
-	firstPass.setUniformmat4("mView", mView);
-	firstPass.setUniformmat4("projection", projection);
-	firstPass.setUniformmat3("mNormal", normalMatrix);
+	geometry.setUniformmat4("mView", mView);
+	geometry.setUniformmat4("projection", projection);
+	geometry.setUniformmat3("mNormal", normalMatrix);
 
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
@@ -164,8 +169,8 @@ void Scene::geometryPass() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (auto &i : meshes) {
-		firstPass.setUniformv3f("diffuse", i.diffuse);
-		firstPass.setUniformf("specular", i.specular);
+		geometry.setUniformv3f("diffuse", i.diffuse);
+		geometry.setUniformf("specular", i.specular);
 		i.render();
 	}
 
@@ -312,7 +317,13 @@ void Scene::compositePass() {
 	finalPass.setUniformi("shadowMapWidth", 2048);
 	finalPass.setUniformi("shadowMapHeight", 2048);
 
+	finalPass.setUniformi("type", type);
+
+	//glEnable(GL_FRAMEBUFFER_SRGB);
+
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	fsQuad.render();
+
+	//glDisable(GL_FRAMEBUFFER_SRGB);
 }

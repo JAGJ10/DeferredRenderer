@@ -19,7 +19,7 @@ static const GLfloat lastY = (height / 2);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-void handleInput(GLFWwindow* window, Camera &cam);
+void handleInput(GLFWwindow* window, Camera& cam, Scene& scene);
 
 int main() {
 	//Checks for memory leaks in debug mode
@@ -74,7 +74,7 @@ int main() {
 
 		// Check and call events
 		glfwPollEvents();
-		handleInput(window, cam);
+		handleInput(window, cam, scene);
 
 		scene.renderScene(cam);
 
@@ -89,7 +89,7 @@ int main() {
 	return 0;
 }
 
-void handleInput(GLFWwindow* window, Camera &cam) {
+void handleInput(GLFWwindow* window, Camera& cam, Scene& scene) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
@@ -110,6 +110,31 @@ void handleInput(GLFWwindow* window, Camera &cam) {
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 		cam.wasdMovement(DOWN, deltaTime);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
+		scene.setType(0);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_1) == GLFW_PRESS)
+		scene.setType(1);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_2) == GLFW_PRESS)
+		scene.setType(2);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_3) == GLFW_PRESS)
+		scene.setType(3);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_4) == GLFW_PRESS)
+		scene.setType(4);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_5) == GLFW_PRESS)
+		scene.setType(5);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_6) == GLFW_PRESS)
+		scene.setType(6);
+
+	if (glfwGetKey(window, GLFW_KEY_KP_7) == GLFW_PRESS)
+		scene.setType(7);
+		
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);

@@ -23,8 +23,10 @@ public:
 
 	void loadMeshes();
 	void renderScene(Camera &cam);
+	void setType(int type);
 
 private:
+	int type;
 	int width, height;
 	float aspectRatio;
 
@@ -36,7 +38,7 @@ private:
 
 	GBuffer gBuffer;
 	ShadowMap dLightShadow;
-	Shader firstPass;
+	Shader geometry;
 	Shader shadow;
 	Shader stencil;
 	Shader lightPass;

@@ -16,6 +16,8 @@ uniform mat4 shadowMapMVP;
 uniform int shadowMapWidth;
 uniform int shadowMapHeight;
 
+uniform int type;
+
 out vec4 fragColor;
 
 const float specularPower = 16.0f;
@@ -37,19 +39,14 @@ float getShadowFactor(vec3 position) {
 
 	vec2 offset = vec2(1.0 / float(shadowMapWidth), 1.0 / float(shadowMapHeight));
 
-	for (int y = -1 ; y <= 1 ; y++) {
-		for (int x = -1 ; x <= 1 ; x++) {
+	for (int y = -1; y <= 1; y++) {
+		for (int x = -1; x <= 1; x++) {
 			vec3 uvc = vec3(p.xy + (vec2(x,y) * offset), p.z - 0.005);
 			factor += texture(shadowMap, uvc);
         }
     }
 
 	return (0.5 + (factor / 18));
-
-	//float shadowDepth = texture(shadowMap, p.xy).x;
-
-	//if (shadowDepth < (p.z - 0.0001)) return 0.5;
-	//else return 1.0;
 }
 
 void main() {
@@ -75,8 +72,21 @@ void main() {
 
 	vec3 finalColor = lightColor * (diffuse + specular);
 
-	//fragColor = vec4((ambient + (finalColor * shadowFactor)) * ssao, 1);
-	//fragColor = vec4((ambient + light + (finalColor * shadowFactor)) * ssao, 1);
-	fragColor = vec4(light * ssao, 1);
-	//fragColor = vec4(texture(shadowMap, vec3(coord, 1.0)).x);
+	if (type == 0) {
+		fragColor = vec4(color, 1);
+	} else if (type == 1) {
+		fragColor = vec4(n, 1);
+	} else if (type == 2) {
+		fragColor = vec4(ssao);
+	} else if (type == 3) {
+		fragColor = vec4(texture(shadowMap, vec3(coord, 1.0)).x);
+	} else if (type == 4) {
+		fragColor = vec4(light * ssao, 1);
+	} else if (type == 5) {
+		fragColor = vec4((ambient + finalColor) * ssao, 1);
+	} else if (type == 6) {
+		fragColor = vec4((ambient + (finalColor * shadowFactor)) * ssao, 1);
+	} else if (type == 7) {
+		fragColor = vec4((ambient + light + (finalColor * shadowFactor)) * ssao, 1);
+	}
 }
