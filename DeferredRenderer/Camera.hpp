@@ -13,6 +13,12 @@ enum Movement {
 	DOWN
 };
 
+struct CameraDireciton {
+	GLenum face;
+	glm::vec3 target;
+	glm::vec3 up;
+};
+
 class Camera {
 public:
 	glm::vec3 eye;

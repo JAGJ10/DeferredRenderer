@@ -11,8 +11,10 @@ Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
 gBuffer(GBuffer(width, height)),
 dLightShadow(ShadowMap(2048, 2048)),
+pLightShadow(PointLightShadowMap(516, 516)),
 geometry(Shader("gbuffer.vert", "gbuffer.frag")),
 shadow(Shader("shadow.vert", "empty.frag")),
+plShadow(Shader("light.vert", "plShadow.frag")),
 stencil(Shader("light.vert", "empty.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
@@ -26,6 +28,14 @@ sphere(Mesh())
 	projection = glm::infinitePerspective(cam.zoom, aspectRatio, 0.1f);
 	dLightMView = glm::lookAt(glm::vec3(500.0f, 500.0f, 500.0f), glm::vec3(0), glm::vec3(0, 1, 0));
 	dLightProjection = glm::ortho(-450.0f, 450.0f, -450.0f, 450.0f, 0.1f, 2000.0f);
+
+	directions[0] = { GL_TEXTURE_CUBE_MAP_POSITIVE_X, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f) };
+	directions[1] = { GL_TEXTURE_CUBE_MAP_NEGATIVE_X, glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f) };
+	directions[2] = { GL_TEXTURE_CUBE_MAP_POSITIVE_Y, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f) };
+	directions[3] = { GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) };
+	directions[4] = { GL_TEXTURE_CUBE_MAP_POSITIVE_Z, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f) };
+	directions[5] = { GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f) };
+	
 	srand(int(time(NULL)));
 
 	for (int i = 0; i < 50; i++) {
@@ -125,9 +135,9 @@ void Scene::renderScene(Camera &cam) {
 	geometryPass();
 
 	//Render shadowmap
-	glViewport(0, 0, 2048, 2048);
 	shadowPass();
-	glViewport(0, 0, width, height);
+	
+	//Render point light shadow maps
 
 	//Need to clear light buffer
 	gBuffer.bindDraw();
@@ -135,12 +145,13 @@ void Scene::renderScene(Camera &cam) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	//Compute stencil and then render lights
-	glEnable(GL_STENCIL_TEST);
 	for (auto &pl : lights) {
+		plShadowPass(pl);
+		glEnable(GL_STENCIL_TEST);
 		stencilPass(pl);
 		pointLightPass(pl);
+		glDisable(GL_STENCIL_TEST);
 	}
-	glDisable(GL_STENCIL_TEST);
 	
 	//SSAO to gBuffer's effect1 texture
 	ssaoPass();
@@ -179,6 +190,7 @@ void Scene::geometryPass() {
 }
 
 void Scene::shadowPass() {
+	glViewport(0, 0, 2048, 2048);
 	glUseProgram(shadow.program);
 	dLightShadow.bindDraw();
 	
@@ -197,6 +209,29 @@ void Scene::shadowPass() {
 	glDepthMask(GL_FALSE);
 
 	dLightShadow.unbindDraw();
+	glViewport(0, 0, width, height);
+}
+
+void Scene::plShadowPass(PointLight pl) {
+	glUseProgram(plShadow.program);
+	pLightShadow.bindDraw();
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	
+	plShadow.setUniformmat4("projection", projection);
+	plShadow.setUniformv3f("worldPos", pl.position);
+	plShadow.setUniformf("radius", pl.radius);
+	plShadow.setUniformv3f("lPos", glm::vec3(mView * glm::vec4(pl.position, 1.0)));
+	plShadow.setUniformv2f("screenSize", glm::vec2(width, height));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
+	
+	for (int i = 0; i < 6; i++) {
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, directions[i].face, pLightShadow.cubeMap, 0);
+		plShadow.setUniformmat4("mView", glm::lookAt(pl.position, directions[i].target, directions[i].up));
+		sphere.render();
+	}
 }
 
 void Scene::stencilPass(PointLight pl) {
@@ -230,10 +265,13 @@ void Scene::pointLightPass(PointLight pl) {
 	glBindTexture(GL_TEXTURE_2D, gBuffer.normal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gBuffer.color);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, pLightShadow.cubeMap);
 
 	lightPass.setUniformi("positionMap", 0);
 	lightPass.setUniformi("normalMap", 1);
 	lightPass.setUniformi("colorMap", 2);
+	lightPass.setUniformi("shadowMap", 3);
 
 	lightPass.setUniformmat4("mView", mView);
 	lightPass.setUniformmat4("projection", projection);

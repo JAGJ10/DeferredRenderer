@@ -159,6 +159,7 @@
     <ClCompile Include="Octree.cpp" />
     <ClCompile Include="OctreeNode.cpp" />
     <ClCompile Include="PointLight.h" />
+    <ClCompile Include="PointLightShadowMap.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -178,6 +179,7 @@
     </ClInclude>
     <ClInclude Include="Octree.h" />
     <ClInclude Include="OctreeNode.h" />
+    <ClInclude Include="PointLightShadowMap.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="Shader.h" />
@@ -191,6 +193,7 @@
     <None Include="light.frag" />
     <None Include="light.vert" />
     <None Include="empty.frag" />
+    <None Include="plShadow.frag" />
     <None Include="shadow.vert" />
     <None Include="ubershader.frag" />
     <None Include="ubershader.vert" />

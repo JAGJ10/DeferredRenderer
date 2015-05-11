@@ -81,7 +81,7 @@ void main() {
 	} else if (type == 3) {
 		fragColor = vec4(texture(shadowMap, vec3(coord, 1.0)).x);
 	} else if (type == 4) {
-		fragColor = vec4(light * ssao, 1);
+		fragColor = vec4(light, 1);
 	} else if (type == 5) {
 		fragColor = vec4((ambient + finalColor) * ssao, 1);
 	} else if (type == 6) {

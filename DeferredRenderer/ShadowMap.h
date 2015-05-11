@@ -16,7 +16,7 @@ public:
 	void unbindDraw();
 	void unbindRead();
 
-private:
+protected:
 	GLuint fbo;
 
 	int width, height;

@@ -100,6 +100,9 @@
     <ClCompile Include="ShadowMap.cpp">
       <Filter>src\Lighting</Filter>
     </ClCompile>
+    <ClCompile Include="PointLightShadowMap.cpp">
+      <Filter>src\Lighting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_obj_loader.h">
@@ -147,6 +150,9 @@
     <ClInclude Include="ShadowMap.h">
       <Filter>src\Lighting</Filter>
     </ClInclude>
+    <ClInclude Include="PointLightShadowMap.h">
+      <Filter>src\Lighting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gbuffer.frag">
@@ -183,6 +189,9 @@
       <Filter>shaders\stencil</Filter>
     </None>
     <None Include="shadow.vert">
+      <Filter>shaders\shadow</Filter>
+    </None>
+    <None Include="plShadow.frag">
       <Filter>shaders\shadow</Filter>
     </None>
   </ItemGroup>

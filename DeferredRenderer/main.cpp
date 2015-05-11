@@ -65,7 +65,7 @@ int main() {
 	write(outfile, shapes, materials);
 	return 1;*/
 	scene.loadMeshes();
-
+	
 	while (!glfwWindowShouldClose(window)) {
 		//Set frame times
 		float currentFrame = float(glfwGetTime());
@@ -75,7 +75,7 @@ int main() {
 		// Check and call events
 		glfwPollEvents();
 		handleInput(window, cam, scene);
-
+		
 		scene.renderScene(cam);
 
 		// Swap the buffers
@@ -135,7 +135,6 @@ void handleInput(GLFWwindow* window, Camera& cam, Scene& scene) {
 	if (glfwGetKey(window, GLFW_KEY_KP_7) == GLFW_PRESS)
 		scene.setType(7);
 		
-
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)

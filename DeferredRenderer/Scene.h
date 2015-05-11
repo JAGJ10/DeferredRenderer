@@ -13,6 +13,7 @@
 #include "PointLight.h"
 #include "MeshHelper.h"
 #include "ShadowMap.h"
+#include "PointLightShadowMap.h"
 #include "tiny_obj_loader.h"
 #include <time.h>
 
@@ -33,13 +34,17 @@ private:
 	glm::mat4 mView, projection, dLightMView, dLightProjection;
 	glm::mat3 normalMatrix;
 
+	CameraDireciton directions[6];
+
 	GLuint noiseTex;
 	glm::vec2 noiseScale;
 
 	GBuffer gBuffer;
 	ShadowMap dLightShadow;
+	PointLightShadowMap pLightShadow;
 	Shader geometry;
 	Shader shadow;
+	Shader plShadow;
 	Shader stencil;
 	Shader lightPass;
 	Shader ssao;
@@ -56,6 +61,7 @@ private:
 	void initKernel();
 	void geometryPass();
 	void shadowPass();
+	void plShadowPass(PointLight pl);
 	void stencilPass(PointLight pl);
 	void pointLightPass(PointLight pl);
 	void ssaoPass();
