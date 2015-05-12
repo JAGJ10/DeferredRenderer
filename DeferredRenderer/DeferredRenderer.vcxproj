@@ -194,6 +194,7 @@
     <None Include="light.vert" />
     <None Include="empty.frag" />
     <None Include="plShadow.frag" />
+    <None Include="plShadow.vert" />
     <None Include="shadow.vert" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />

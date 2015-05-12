@@ -18,10 +18,10 @@ out vec4 fragColor;
 const float specularPower = 16.0f;
 
 float getShadowFactor(vec3 position) {
-	float sDist = texture(shadowMap, normalize(worldPos - position)).x;
+	float sDist = texture(shadowMap, normalize(position - worldPos)).x;
 	float fDist = dot(worldPos - position, worldPos - position);
 
-	if (fDist < sDist) return 1.0;
+	if (fDist * 0.95 < sDist) return 1.0;
 	else return 0.5;
 }
 
@@ -35,7 +35,7 @@ void main() {
 	float shadowFactor = getShadowFactor((inverseMView * vec4(pos, 1.0)).xyz);
 
 	float r = length(lPos - pos);
-	float attenuation = dot(lightAttenuation, vec3(1, r, r*r));
+	float attenuation = dot(lightAttenuation, vec3(1, r, 0));
 	vec3 l = (lPos - pos) / r;
 	vec3 v = -normalize(pos);
 	vec3 h = normalize(v + l);
@@ -47,5 +47,5 @@ void main() {
 	if (ndotl >= 0) specular = pow(max(0.0f, dot(n, h)), specularPower) * vec3(s);
 
 	fragColor = vec4(shadowFactor * lightColor * (diffuse + specular), 1);
-	fragColor = vec4(vec3(shadowFactor), 1);
+	//fragColor = vec4(vec3(shadowFactor), 1);
 }

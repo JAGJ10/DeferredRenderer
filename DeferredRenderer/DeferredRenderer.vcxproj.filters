@@ -203,5 +203,8 @@
     <None Include="skybox.frag">
       <Filter>shaders\skybox</Filter>
     </None>
+    <None Include="plShadow.vert">
+      <Filter>shaders\shadow</Filter>
+    </None>
   </ItemGroup>
 </Project>

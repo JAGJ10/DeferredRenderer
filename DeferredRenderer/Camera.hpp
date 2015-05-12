@@ -45,8 +45,8 @@ public:
 	{}
 
 	glm::mat4 getMView() {
-		//return glm::lookAt(eye, glm::vec3(0.0f, 0.0f, 0.0f), up);
-		return glm::lookAt(eye, eye + front, up);
+		return glm::lookAt(eye, glm::vec3(0.0f, 0.0f, 0.0f), up);
+		//return glm::lookAt(eye, eye + front, up);
 	}
 
 	void wasdMovement(Movement dir, float deltaTime) {

@@ -11,10 +11,10 @@ Scene::Scene(int width, int height, Camera& cam) :
 width(width), height(height), 
 gBuffer(GBuffer(width, height)),
 dLightShadow(ShadowMap(2048, 2048)),
-pLightShadow(PointLightShadowMap(516, 516)),
+pLightShadow(PointLightShadowMap(1024, 1024)),
 geometry(Shader("gbuffer.vert", "gbuffer.frag")),
 shadow(Shader("shadow.vert", "empty.frag")),
-plShadow(Shader("light.vert", "plShadow.frag")),
+plShadow(Shader("plShadow.vert", "plShadow.frag")),
 stencil(Shader("light.vert", "empty.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
@@ -47,8 +47,8 @@ sphere(Mesh())
 		//pl.color = glm::vec3(r1, r2, r3);
 		pl.color = glm::vec3(1);
 		//pl.position = glm::vec3(500 * (r1 * 2 - 1), 50 * r2, 500 * (r3 * 2 - 1));
-		pl.position = glm::vec3(0, 1, 0);
-		pl.attenuation = glm::vec3(1, 0.01f, 0.01f);
+		pl.position = glm::vec3(100, 20, 280);
+		pl.attenuation = glm::vec3(1, 0.01f, 0.001f); //radius, 0.001 = 500, 0.01 = 159
 		pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
 		lights.push_back(pl);
 	}
@@ -174,7 +174,7 @@ void Scene::renderScene(Camera &cam) {
 	
 	//Compute stencil and then render lights
 	for (auto &pl : lights) {
-		glViewport(0, 0, 516, 516);
+		glViewport(0, 0, 1024, 1024);
 		plShadowPass(pl);
 		glViewport(0, 0, width, height);
 		glEnable(GL_STENCIL_TEST);
@@ -246,27 +246,46 @@ void Scene::shadowPass() {
 }
 
 void Scene::plShadowPass(PointLight pl) {
+	//Render out depth for depth testing
+	glUseProgram(stencil.program);
+	pLightShadow.bindDraw();
+	glDrawBuffer(GL_NONE);
+
+	stencil.setUniformmat4("mView", mView);
+	stencil.setUniformmat4("projection", projection);
+	stencil.setUniformv3f("worldPos", pl.position);
+	stencil.setUniformf("radius", pl.radius);
+
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+	sphere.render();
+
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+
+	pLightShadow.unbindDraw();
+
+	//Render shadow map to cube
 	glUseProgram(plShadow.program);
 	pLightShadow.bindDraw();
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-	
-	plShadow.setUniformmat4("projection", projection);
-	plShadow.setUniformmat4("inverseMView", glm::inverse(mView));
+
 	plShadow.setUniformv3f("worldPos", pl.position);
-	plShadow.setUniformf("radius", pl.radius);
-	plShadow.setUniformv2f("screenSize", glm::vec2(width, height));
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.position);
-
-	plShadow.setUniformi("positionMap", 0);
+	//glEnable(GL_DEPTH_TEST);
 	
 	for (int i = 0; i < 6; i++) {
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, directions[i].face, pLightShadow.cubeMap, 0);
-		plShadow.setUniformmat4("mView", glm::lookAt(pl.position, pl.position + directions[i].target, directions[i].up));
-		sphere.render();
+		glClear(GL_COLOR_BUFFER_BIT);
+		plShadow.setUniformmat4("mvp", projection * glm::lookAt(pl.position, pl.position + directions[i].target, directions[i].up));
+		for (auto &i : meshes) {
+			i.render();
+		}
 	}
+
+	//glDisable(GL_DEPTH_TEST);
 
 	pLightShadow.unbindDraw();
 }

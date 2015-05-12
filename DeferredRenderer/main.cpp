@@ -106,11 +106,11 @@ void handleInput(GLFWwindow* window, Camera& cam, Scene& scene) {
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		cam.wasdMovement(LEFT, deltaTime);
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		cam.wasdMovement(UP, deltaTime);
+	//if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		//cam.wasdMovement(UP, deltaTime);
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		cam.wasdMovement(DOWN, deltaTime);
+	//if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+		//cam.wasdMovement(DOWN, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
 		scene.setType(0);
