@@ -43,6 +43,7 @@ int main() {
 
 	// Define the viewport dimensions
 	glViewport(0, 0, width, height);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	Camera cam = Camera();
 	Scene scene(width, height, cam);
