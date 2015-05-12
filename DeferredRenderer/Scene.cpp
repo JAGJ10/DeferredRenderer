@@ -19,7 +19,8 @@ stencil(Shader("light.vert", "empty.frag")),
 ssao(Shader("ssao.vert", "ssao.frag")),
 blur(Shader("blur.vert", "blur.frag")),
 lightPass(Shader("light.vert", "light.frag")),
-finalPass(Shader("ubershader.vert", "ubershader.frag")), 
+finalPass(Shader("ubershader.vert", "ubershader.frag")),
+skybox(Shader("skybox.vert", "skybox.frag")),
 fsQuad(FullscreenQuad()),
 sphere(Mesh())
 {
@@ -46,21 +47,45 @@ sphere(Mesh())
 		//pl.color = glm::vec3(r1, r2, r3);
 		pl.color = glm::vec3(1);
 		//pl.position = glm::vec3(500 * (r1 * 2 - 1), 50 * r2, 500 * (r3 * 2 - 1));
-		pl.position = glm::vec3(0, 100, 0);
+		pl.position = glm::vec3(0, 1, 0);
 		pl.attenuation = glm::vec3(1, 0.01f, 0.01f);
 		pl.radius = (-pl.attenuation.y + sqrtf(pow(pl.attenuation.y, 2) - (4 * pl.attenuation.z*(pl.attenuation.x - 256)))) / (2 * pl.attenuation.z);
 		lights.push_back(pl);
 	}
+
+	loadCubemap();
 }
 
 Scene::~Scene() {
-	if (noiseTex != 0) {
-		glDeleteTextures(1, &noiseTex);
-	}
+	if (noiseTex != 0) glDeleteTextures(1, &noiseTex);
+	if (skyboxTexture != 0) glDeleteTextures(1, &skyboxTexture);
 }
 
 void Scene::setType(int type) {
 	this->type = type;
+}
+
+void Scene::loadCubemap() {
+	vector<const GLchar*> faces{ "skybox/v1/right.jpg", "skybox/v1/left.jpg", "skybox/v1/top.jpg", "skybox/v1/bottom.jpg", "skybox/v1/back.jpg", "skybox/v1/front.jpg" };
+	//vector<const GLchar*> faces{ "skybox/right.jpg", "skybox/left.jpg", "skybox/top.jpg", "skybox/bottom.jpg", "skybox/back.jpg", "skybox/front.jpg" };
+	int width, height;
+	unsigned char* image;
+
+	glGenTextures(1, &skyboxTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+	for (GLuint i = 0; i < faces.size(); i++) {
+		image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,	GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	free(image);
 }
 
 void Scene::loadMeshes() {
@@ -145,6 +170,7 @@ void Scene::renderScene(Camera &cam) {
 	gBuffer.bindDraw();
 	gBuffer.setDrawLight();
 	glClear(GL_COLOR_BUFFER_BIT);
+	gBuffer.unbindDraw();
 	
 	//Compute stencil and then render lights
 	for (auto &pl : lights) {
@@ -164,6 +190,9 @@ void Scene::renderScene(Camera &cam) {
 
 	//Render directional light and compute final color with light buffer
 	compositePass();
+
+	//Render skybox last
+	skyboxPass();
 
 	GLenum err = glGetError();
 	if (err != 0) cout << err << endl;
@@ -238,6 +267,8 @@ void Scene::plShadowPass(PointLight pl) {
 		plShadow.setUniformmat4("mView", glm::lookAt(pl.position, pl.position + directions[i].target, directions[i].up));
 		sphere.render();
 	}
+
+	pLightShadow.unbindDraw();
 }
 
 void Scene::stencilPass(PointLight pl) {
@@ -260,6 +291,8 @@ void Scene::stencilPass(PointLight pl) {
 	sphere.render();
 
 	glDisable(GL_DEPTH_TEST);
+
+	gBuffer.unbindDraw();
 }
 
 void Scene::pointLightPass(PointLight pl) {
@@ -301,6 +334,8 @@ void Scene::pointLightPass(PointLight pl) {
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
+
+	gBuffer.unbindDraw();
 }
 
 void Scene::ssaoPass() {
@@ -374,4 +409,28 @@ void Scene::compositePass() {
 	fsQuad.render();
 
 	//glDisable(GL_FRAMEBUFFER_SRGB);
+}
+
+void Scene::skyboxPass() {
+	//Blit gbuffer's depth to main FBO for testing
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.getFBO());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+	glUseProgram(skybox.program);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+
+	skybox.setUniformi("skybox", 0);
+
+	skybox.setUniformmat4("inverseVP", glm::inverse(projection * glm::mat4(glm::mat3(mView))));
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	fsQuad.render();
+
+	glDisable(GL_DEPTH_TEST);
 }

@@ -16,6 +16,7 @@
 #include "PointLightShadowMap.h"
 #include "tiny_obj_loader.h"
 #include <time.h>
+#include <SOIL.h>
 
 class Scene {
 public:
@@ -36,7 +37,7 @@ private:
 
 	CameraDireciton directions[6];
 
-	GLuint noiseTex;
+	GLuint noiseTex, skyboxTexture;
 	glm::vec2 noiseScale;
 
 	GBuffer gBuffer;
@@ -50,6 +51,7 @@ private:
 	Shader ssao;
 	Shader blur;
 	Shader finalPass;
+	Shader skybox;
 	FullscreenQuad fsQuad;
 	//Octree octree;
 	//std::vector<SceneObject*> visibleObjects;
@@ -58,6 +60,7 @@ private:
 	std::vector<Mesh> meshes;
 	std::vector<float> kernel;
 
+	void loadCubemap();
 	void initKernel();
 	void geometryPass();
 	void shadowPass();
@@ -67,6 +70,7 @@ private:
 	void ssaoPass();
 	void blurPass();
 	void compositePass();
+	void skyboxPass();
 };
 
 #endif
