@@ -19,7 +19,6 @@ public:
 	void updateBuffers(std::vector<glm::vec3>& positions, std::vector<GLuint>& indices);
 	void clear();
 	void render();
-	void setAttributes();
 	bool hasBuffer() const;
 
 private:
@@ -27,6 +26,8 @@ private:
 	VBO positionBuffer;
 	VBO indexBuffer;
 	VBO normalBuffer;
+
+	void setAttributes();
 };
 
 #endif

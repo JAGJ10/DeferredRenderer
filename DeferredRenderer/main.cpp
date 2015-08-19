@@ -48,7 +48,7 @@ int main() {
 	Camera cam = Camera();
 	Scene scene(width, height, cam);
 
-	/*std::string inputfile = "sponza.obj";
+	/*std::string inputfile = "scenes/rungholt.obj";
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
@@ -106,11 +106,11 @@ void handleInput(GLFWwindow* window, Camera& cam, Scene& scene) {
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		cam.wasdMovement(LEFT, deltaTime);
 
-	//if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		//cam.wasdMovement(UP, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		cam.wasdMovement(UP, deltaTime);
 
-	//if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		//cam.wasdMovement(DOWN, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+		cam.wasdMovement(DOWN, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_KP_0) == GLFW_PRESS)
 		scene.setType(0);
