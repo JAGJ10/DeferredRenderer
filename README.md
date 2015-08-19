@@ -1,5 +1,5 @@
 # Deferred Renderer
-A Deferred Renderer with an Octree data structure for spatial partitioning
+A Deferred Renderer with support for point lights, shadow maps, SSAO, and skybox
 
 
 Required dependencies:
